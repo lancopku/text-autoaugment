@@ -1,0 +1,10 @@
+model:
+  type: Bert
+dataset: yelp5
+dataroot: /home/renshuhuai/TextAutoAugment/data/yelp_review_full_csv
+aug: yelp5
+per_device_train_batch_size: 64
+per_device_eval_batch_size: 128
+epoch: 10
+lr: 4e-5
+max_seq_length: 128
