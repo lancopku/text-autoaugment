@@ -105,7 +105,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     ray.init(num_gpus=4, num_cpus=40)
 
     logger.info('loading configuration...')
-    _ = C('confs/%s' % configfile)
+    # _ = C('confs/%s' % configfile)
     C.get()['dataset'] = dataset
     C.get()['num_search'] = num_search
     C.get()['num_policy'] = num_policy
