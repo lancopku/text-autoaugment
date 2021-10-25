@@ -13,7 +13,8 @@ def _tokenizer(text, token_pattern=r"(?u)\b\w\w+\b"):
 
 
 def train_tfidf(dataset, data_path=None):
-    model_path = 'models/tfidf/{}'.format(dataset)
+    abspath = C.get()['abspath']
+    model_path = '{}/models/tfidf/{}'.format(abspath, dataset)
     data_config = C.get()['data_config']
     if not os.path.exists(model_path):
         print('make model directory')
