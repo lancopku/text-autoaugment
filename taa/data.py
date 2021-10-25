@@ -4,7 +4,7 @@ import os
 import random
 import torch
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
-import transforms as text_transforms
+import .transforms import Compose
 from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
@@ -33,7 +33,7 @@ logger.setLevel(logging.INFO)
 
 def get_datasets(dataset, dataroot, policy_opt):
     # do data augmentation
-    transform_train = text_transforms.Compose([])
+    transform_train = Compose([])
     aug = C.get()['aug']
     data_config = C.get()['data_config']
     logger.info('aug: {}'.format(aug))
@@ -127,7 +127,7 @@ def augment(dataset, policy_path, n_aug, configfile=None):
     C.get()['n_aug'] = n_aug
 
     policy = joblib.load(policy_path)
-    transform_train = text_transforms.Compose([])
+    transform_train = Compose([])
     transform_train.transforms.insert(0, Augmentation(policy))    
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
