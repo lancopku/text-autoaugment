@@ -10,7 +10,7 @@ import random
 import pandas as pd
 import re
 from theconf import Config as C
-from common import get_logger
+from ..common import get_logger
 import logging
 
 logger = get_logger('Text AutoAugment')
