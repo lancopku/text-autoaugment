@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 setup(
     name="TAA",
     py_modules=["text-autoaugment"],
-    version="1.0",
+    version="2.0",
     description="augment your dataset with text auto augmentation",
     author="shuhuairen",
     packages=find_packages(),
