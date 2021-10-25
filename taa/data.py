@@ -4,7 +4,7 @@ import os
 import random
 import torch
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
-import .transforms import Compose
+from .transforms import Compose
 from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
