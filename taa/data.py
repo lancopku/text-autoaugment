@@ -4,26 +4,26 @@ import os
 import random
 import torch
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
-import transforms as text_transforms
+import .transforms as text_transforms
 from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
-from custom_dataset import general_dataset
+from .custom_dataset import general_dataset
 from datasets import load_dataset 
-from augmentation import get_augment, apply_augment, random_augment
-from common import get_logger
+from .augmentation import get_augment, apply_augment, random_augment
+from .common import get_logger
 import pandas as pd
-from utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
+from .utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
 from transformers import BertTokenizer, BertTokenizerFast
-from text_networks import num_class
+from .text_networks import num_class
 import math
 import copy
-from archive import policy_map, huggingface_dataset
+from .archive import policy_map, huggingface_dataset
 import multiprocessing
 from functools import partial
 import time
-from utils.get_data import download_data
-from utils.metrics import n_dist
+from .utils.get_data import download_data
+from .utils.metrics import n_dist
 import joblib
 
 
