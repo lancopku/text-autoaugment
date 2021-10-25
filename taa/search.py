@@ -95,7 +95,7 @@ def objective(config, checkpoint_dir=None):
 
 
 
-def search_policy(dataset, configfile=None, abspath, num_search=200, num_policy=12, num_op=2):
+def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=12, num_op=2):
     '''search for a customized policy with trained parameters for text augmentation'''
     logger.info('----- Search Test-Time Augmentation Policies -----')
     logger.info('-' * 51)
