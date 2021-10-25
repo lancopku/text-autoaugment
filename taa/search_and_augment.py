@@ -1,11 +1,11 @@
 import os
 import transformers
 import pkg_resources
-from .data import augment
-from .search import search_policy
+from data import augment
+from search import search_policy
 from datasets import load_dataset
 from theconf import Config as C
-from .text_networks import get_model, num_class, get_num_class
+from text_networks import get_model, num_class, get_num_class
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments, BertTokenizerFast
 
 

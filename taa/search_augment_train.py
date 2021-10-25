@@ -4,19 +4,19 @@ import torch
 import shutil
 import logging
 import transformers
-from .data import augment
-from .train import compute_metrics
-from .search import search_policy
+from data import augment
+from train import compute_metrics
+from search import search_policy
 from datasets import load_dataset
 import pandas as pd
 import numpy as np
 from theconf import Config as C
-from .utils.raw_data_utils import get_examples
-from .custom_dataset import general_dataset
-from .text_networks import get_model, num_class, get_num_class
+from utils.raw_data_utils import get_examples
+from custom_dataset import general_dataset
+from text_networks import get_model, num_class, get_num_class
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments, BertTokenizerFast
-from .common import get_logger, add_filehandler
-from .utils.train_tfidf import train_tfidf
+from common import get_logger, add_filehandler
+from utils.train_tfidf import train_tfidf
 
 
 

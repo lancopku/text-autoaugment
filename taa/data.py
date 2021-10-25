@@ -4,26 +4,26 @@ import os
 import random
 import torch
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
-import .transforms
+import transforms as text_transforms
 from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
-from .custom_dataset import general_dataset
+from custom_dataset import general_dataset
 from datasets import load_dataset 
-from .augmentation import get_augment, apply_augment, random_augment
-from .common import get_logger
+from augmentation import get_augment, apply_augment, random_augment
+from common import get_logger
 import pandas as pd
-from .utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
+from utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
 from transformers import BertTokenizer, BertTokenizerFast
-from .text_networks import num_class
+from text_networks import num_class
 import math
 import copy
-from .archive import policy_map, huggingface_dataset
+from archive import policy_map, huggingface_dataset
 import multiprocessing
 from functools import partial
 import time
-from .utils.get_data import download_data
-from .utils.metrics import n_dist
+from utils.get_data import download_data
+from utils.metrics import n_dist
 import joblib
 
 
@@ -33,7 +33,7 @@ logger.setLevel(logging.INFO)
 
 def get_datasets(dataset, dataroot, policy_opt):
     # do data augmentation
-    transform_train = transforms.Compose([])
+    transform_train = text_transforms.Compose([])
     aug = C.get()['aug']
     data_config = C.get()['data_config']
     logger.info('aug: {}'.format(aug))
@@ -127,7 +127,7 @@ def augment(dataset, policy_path, n_aug, configfile=None):
     C.get()['n_aug'] = n_aug
 
     policy = joblib.load(policy_path)
-    transform_train = transforms.Compose([])
+    transform_train = text_transforms.Compose([])
     transform_train.transforms.insert(0, Augmentation(policy))    
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')

@@ -17,7 +17,7 @@ __all__ = ["Compose"]
 class Compose(object):
     """Composes several transforms together.
 
-    Args:
+    Args:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
         transforms (list of ``Transform`` objects): list of transforms to compose.
 
     Example:
