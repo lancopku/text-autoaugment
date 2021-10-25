@@ -10,13 +10,13 @@ import shutil
 import numpy as np
 import torch
 from theconf import Config as C, ConfigArgumentParser
-from common import get_logger, add_filehandler
-from data import get_datasets
-from text_networks import get_model, num_class, get_num_class
+from .common import get_logger, add_filehandler
+from .data import get_datasets
+from .text_networks import get_model, num_class, get_num_class
 import transformers
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments
-from utils.metrics import accuracy, f1, accuracy_score
-from utils.train_tfidf import train_tfidf
+from .utils.metrics import accuracy, f1, accuracy_score
+from .utils.train_tfidf import train_tfidf
 
 transformers.logging.set_verbosity_info()
 logger = get_logger('Text AutoAugment')

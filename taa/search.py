@@ -18,11 +18,11 @@ from ray import tune
 from ray import tune
 from tqdm import tqdm
 from datetime import datetime
-from archive import policy_decoder, remove_deplicates
-from augmentation import augment_list
-from common import get_logger, add_filehandler
-from utils.train_tfidf import train_tfidf
-from train import train_and_eval
+from .archive import policy_decoder, remove_deplicates
+from .augmentation import augment_list
+from .common import get_logger, add_filehandler
+from .utils.train_tfidf import train_tfidf
+from .train import train_and_eval
 from theconf import Config as C, ConfigArgumentParser
 import joblib
 import random
