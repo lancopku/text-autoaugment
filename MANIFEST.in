@@ -1,1 +1,1 @@
-include text-autoaugment/confs/bert_huggingface.yaml
+include taa/confs/bert_huggingface.yaml
