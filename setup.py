@@ -3,10 +3,10 @@ import pkg_resources
 from setuptools import setup, find_packages
 
 setup(
-    name="TAA",
-    version="14.0",
+    name="taa",
+    version="1.00",
     description="augment your dataset with text auto augmentation",
-    author="shuhuairen",
+    author="Shuhuai Ren, Yuxiang Wang",
     packages=find_packages(),
     install_requires=[
         str(r)
