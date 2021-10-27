@@ -9,7 +9,7 @@ from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
 from .custom_dataset import general_dataset
-from datasets import load_dataset 
+from datasets import load_dataset
 from .augmentation import get_augment, apply_augment, random_augment
 from .common import get_logger
 import pandas as pd
@@ -24,7 +24,6 @@ from functools import partial
 import time
 from .utils.get_data import download_data
 from .utils.metrics import n_dist
-import joblib
 
 
 logger = get_logger('Text AutoAugment')
@@ -44,16 +43,14 @@ def get_datasets(dataset, dataroot, policy_opt):
     else:
         transform_train.transforms.insert(0, Augmentation(huggingface_dataset()))
 
-
     # load dataset
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
     train_dataset = load_dataset(data_config, dataset, split='train')
     valid_dataset = load_dataset(data_config, dataset, split='validation')
     test_dataset = load_dataset(data_config, dataset, split='test')
-    
-    
-    label_names = train_dataset.features['label'].names  
+
+    label_names = train_dataset.features['label'].names
     class_num = train_dataset.features['label'].num_classes
     label_mapping = {}
     for i in range(class_num):
@@ -64,14 +61,14 @@ def get_datasets(dataset, dataroot, policy_opt):
         assert policy_opt is False
         all_train_examples_num = len(all_train_examples)
         train_examples, valid_examples = general_split(all_train_examples, int(0.2 * all_train_examples_num),
-                                                         int(0.8 * all_train_examples_num))
+                                                       int(0.8 * all_train_examples_num))
     else:
         train_examples, _ = general_split(all_train_examples, class_num * C.get()['valid']['npc'],
-                                            class_num * C.get()['train']['npc'])
+                                          class_num * C.get()['train']['npc'])
         train_examples = general_subsample_by_classes(train_examples, label_names, label_mapping, 'train')
         all_train_examples = list(set(all_train_examples) - set(train_examples))
         valid_examples, test_examples = general_split(all_train_examples, class_num * C.get()['test']['npc'],
-                                                        class_num * C.get()['valid']['npc'])
+                                                      class_num * C.get()['valid']['npc'])
 
     if not policy_opt:
         test_examples = get_examples(test_dataset)
@@ -93,10 +90,10 @@ class Augmentation(object):
         labels = np.array(labels)
         # generate multiple augmented data if necessary
         labels = labels.repeat(C.get()['n_aug'])
-        texts = texts.repeat(C.get()['n_aug'])            
+        texts = texts.repeat(C.get()['n_aug'])
         partial_apply_augment = partial(apply_augment, policy=self.policy, config=copy.deepcopy(C.get().conf))
         with multiprocessing.Pool(processes=8) as pool:
-                aug_texts = pool.map(partial_apply_augment, texts)
+            aug_texts = pool.map(partial_apply_augment, texts)
         n_dist_value = n_dist(aug_texts, 2)  # ngram=2
         labels = [int(i) for i in list(labels)]
         return aug_texts, labels, n_dist_value
@@ -119,26 +116,20 @@ class SubsetSampler(Sampler):
         return len(self.indices)
 
 
-
-
-def augment(dataset, policy_path, n_aug, configfile=None):
+def augment(dataset, policy, n_aug, configfile=None):
     # get searched augmentation policy
-#   _ = C('confs/%s' % configfile)
+    #   _ = C('confs/%s' % configfile)
     C.get()['n_aug'] = n_aug
 
-    policy = joblib.load(policy_path)
     transform_train = Compose([])
-    transform_train.transforms.insert(0, Augmentation(policy))    
+    transform_train.transforms.insert(0, Augmentation(policy))
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
     examples = get_examples(dataset)
     augmented_dataset = general_dataset(examples, tokenizer, text_transform=transform_train)
-    
-    return augmented_dataset 
 
-
-
+    return augmented_dataset
 
 
 if __name__ == '__main__':

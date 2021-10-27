@@ -3,7 +3,6 @@ from theconf import Config as C
 from transformers.data.processors.utils import InputFeatures
 
 
-
 class general_dataset(Dataset):
     def __init__(self, examples, tokenizer, text_transform=None):
         super(Dataset, self).__init__()
@@ -11,7 +10,7 @@ class general_dataset(Dataset):
         self.texts = [d.text_a for d in examples]
         self.texts = [" ".join(t.split()[:max_seq_length]) if len(t.split()) > max_seq_length else t
                       for t in self.texts]  # clip texts
-        self.labels = [d.label if d.label>=0 else d.label+1 for d in examples]
+        self.labels = [d.label if d.label >= 0 else d.label + 1 for d in examples]
         self.aug_n_dist = 0
 
         if text_transform and text_transform.transforms:
@@ -35,5 +34,3 @@ class general_dataset(Dataset):
 
     def __getitem__(self, item):
         return self.features[item]
-
-

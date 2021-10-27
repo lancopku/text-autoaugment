@@ -13,8 +13,8 @@ do
       --abspath '/home/renshuhuai/TextAutoAugment' \
       --n-aug 1 \
       --num-op 2 \
-      --num-policy 4 \
-      --train-npc 700 \
+      --num-policy 8 \
+      --train-npc 1000 \
       --valid-npc 30 \
       --test-npc 30 \
       --ir $ir \

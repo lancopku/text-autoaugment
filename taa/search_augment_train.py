@@ -19,7 +19,6 @@ from .common import get_logger, add_filehandler
 from .utils.train_tfidf import train_tfidf
 
 
-
 def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy_opt, save_path=None, only_eval=False):   
     transformers.logging.set_verbosity_info()
     logger = get_logger('Text AutoAugment')
@@ -120,8 +119,6 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
     return result
 
 
-
-
 if __name__ == '__main__':
     _ = C('confs/bert_huggingface.yaml')
 
@@ -135,7 +132,7 @@ if __name__ == '__main__':
     # generate augmented dataset
     configfile = 'bert_huggingface.yaml'
     policy_path = '/home/wangyuxiang/Text_AutoAugment/text-autoaugment/final_policy/sst2_Bert_seed59_train-npc50_n-aug8_ir1.00_taa.pkl'
-    augmented_train_dataset = augment(dataset=train_dataset, policy_path=policy_path, n_aug=8, configfile=configfile )
+    augmented_train_dataset = augment(dataset=train_dataset, policy_path=policy_path, n_aug=8, configfile=configfile)
 
     # training
     dataset_type = C.get()['dataset']

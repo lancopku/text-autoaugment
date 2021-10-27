@@ -94,7 +94,6 @@ def objective(config, checkpoint_dir=None):
                 elapsed_time=gpu_secs, done=True)
 
 
-
 def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=12, num_op=2):
     '''search for a customized policy with trained parameters for text augmentation'''
     logger.info('----- Search Test-Time Augmentation Policies -----')
@@ -114,7 +113,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     dataset_type = C.get()['dataset']
     dataroot = C.get()['dataroot']
     model_type = C.get()['model']['type']
-    n_aug = C.get()['n_aug']  
+    n_aug = C.get()['n_aug']
     num_op = C.get()['num_op']
     num_policy = C.get()['num_policy']
     method = C.get()['method']
@@ -161,7 +160,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                 'num_samples': num_search,
                 'resources_per_trial': {'gpu': 1},
                 'config': {
-                    'dataroot': dataroot, 
+                    'dataroot': dataroot,
                     'tag': 'seed%d_trail%d_train-npc%d_n-aug%d' % (seed, trail, train_npc, n_aug),
                     'num_op': num_op, 'num_policy': num_policy,
                 },
@@ -172,7 +171,8 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
             algo = HyperOptSearch()
             scheduler = AsyncHyperBandScheduler()
             register_trainable(name, objective)
-            analysis = tune.run(objective, search_alg=algo, scheduler=scheduler, metric=reward_attr, mode="max", **tune_kwargs)
+            analysis = tune.run(objective, search_alg=algo, scheduler=scheduler, metric=reward_attr, mode="max",
+                                **tune_kwargs)
             results = [x for x in analysis.results.values()]
             logger.info("num_samples = %d" % (len(results)))
             logger.info("select top = %d" % topN)
@@ -190,7 +190,6 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                              result['n_dist'], policy))
                 all_policy.extend(policy)
             logger.info('pickle all_policy_dir...')
-            
 
             for result in results[:topN]:  # get top #args.topN in #arg.num_search trails
                 policy = policy_decoder(result['config'], num_policy, num_op)
@@ -211,10 +210,6 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     else:
         total_computation = 0
         final_policy = method
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -300,7 +295,8 @@ if __name__ == '__main__':
         if not os.path.exists(pkl_path):
             os.makedirs(pkl_path)
         policy_dir = os.path.join(pkl_path, '%s_%s_seed%d_train-npc%d_n-aug%d_ir%.2f_%s.pkl' %
-                                  (dataset_type, model_type, args.seed, args.train_npc, args.n_aug, args.ir, args.method))
+                                  (dataset_type, model_type, args.seed, args.train_npc, args.n_aug, args.ir,
+                                   args.method))
         total_computation = 0
         if os.path.isfile(policy_dir):  # have been searched
             logger.info('use existing policy_dir...')
@@ -336,7 +332,8 @@ if __name__ == '__main__':
             algo = HyperOptSearch()
             scheduler = AsyncHyperBandScheduler()
             register_trainable(name, objective)
-            analysis = tune.run(objective, search_alg=algo, scheduler=scheduler, metric=reward_attr, mode="max", **tune_kwargs)
+            analysis = tune.run(objective, search_alg=algo, scheduler=scheduler, metric=reward_attr, mode="max",
+                                **tune_kwargs)
             results = [x for x in analysis.results.values()]
             logger.info("num_samples = %d" % (len(results)))
             logger.info("select top = %d" % args.topN)

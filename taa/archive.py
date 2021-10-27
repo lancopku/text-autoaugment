@@ -171,6 +171,7 @@ def trec():
             [('synonym_word_substitute', 0.06761427481801857, 0.32908845524510716),
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
 
+
 def huggingface_dataset():
     return [[('synonym_word_substitute', 0.7492730962660217, 0.8816452863413866),
              ('synonym_word_substitute', 0.33184334794125936, 0.5208169910984721)],
@@ -194,5 +195,6 @@ def huggingface_dataset():
              ('tfidf_word_insert', 0.5605668428551196, 0.8275280745990681)],
             [('synonym_word_substitute', 0.06761427481801857, 0.32908845524510716),
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
+
 
 policy_map = {'imdb': imdb(), 'sst5': sst5(), 'trec': trec(), 'yelp2': yelp2(), 'yelp5': yelp5()}
