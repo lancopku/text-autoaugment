@@ -12,9 +12,9 @@ lr: 4e-5
 max_seq_length: 128
 n_aug: 8
 num_op: 2
-num_policy: 12
+num_policy: 4
 method: taa
-topN: 1
+topN: 3
 ir: 1
 seed: 59
 trail: 1
