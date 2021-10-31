@@ -10,7 +10,7 @@ do
   do
     python search.py \
     -c confs/bert_huggingface.yaml \
-    --abspath '/home/renshuhuai/TextAutoAugment' \
+    --abspath '/home/renshuhuai/text-autoaugment' \
     --n-aug 16 \
     --train-npc 40 \
     --valid-npc 30 \

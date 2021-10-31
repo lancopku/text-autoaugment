@@ -127,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('--num-op', type=int, default=2)
     parser.add_argument('--num-policy', type=int, default=4)
     parser.add_argument('--only-eval', action='store_true')
-    parser.add_argument('--abspath', type=str, default='/home/renshuhuai/TextAutoAugment')
+    parser.add_argument('--abspath', type=str, default='/home/renshuhuai/text-autoaugment')
     parser.add_argument('--n-aug', type=int, default=16,
                         help='magnification of augmentation. synthesize n-aug for each given sample')
     parser.add_argument('--train-npc', type=int, default=40, help='train example num per class')

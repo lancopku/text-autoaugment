@@ -108,7 +108,7 @@ def download_sst2():
 
     sst2_root = os.path.join(dataroot, 'sst2')
     if not os.path.exists(sst2_root):
-        os.mkdir(sst2_root)
+        os.makedirs(sst2_root)
         url = ('https://raw.githubusercontent.com/ZhitingHu/'
                'logicnn/master/data/raw/')
         files = ['stsa.binary.train', 'stsa.binary.dev', 'stsa.binary.test']
@@ -124,7 +124,7 @@ def download_sst5():
     sst5_root = os.path.join(dataroot, "trees")
     # download data
     if not os.path.exists(sst5_root):
-        os.mkdir(sst5_root)
+        os.makedirs(sst5_root)
         filename = os.path.join(dataroot, "trainDevTestTrees_PTB.zip")
         urllib.request.urlretrieve("http://nlp.stanford.edu/sentiment/trainDevTestTrees_PTB.zip", filename, progress)
         with zipfile.ZipFile(filename, "r") as tar_ref:
@@ -135,7 +135,7 @@ def download_sst5():
 def download_trec():
     trec_root = os.path.join(dataroot, 'trec')
     if not os.path.exists(trec_root):
-        os.mkdir(trec_root)
+        os.makedirs(trec_root)
         urllib.request.urlretrieve('http://cogcomp.org/Data/QA/QC/train_5500.label', os.path.join(trec_root, 'train_5500.label'), progress)
         urllib.request.urlretrieve('http://cogcomp.org/Data/QA/QC/TREC_10.label', os.path.join(trec_root, 'TREC_10.label'), progress)
 

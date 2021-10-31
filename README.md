@@ -28,13 +28,15 @@ python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_percep
 
 ### Use TAA with Huggingface
 
-#### Get training dataset augmented by TAA policy
+#### Get augmented training dataset with TAA policy
+
+##### Search for the optimal policy
 
 You can search for the optimal policy on classification datasets supported by [huggingface/datasets](https://huggingface.co/datasets) (Take [SST2](https://huggingface.co/datasets/glue#sst2) as an example):
 ```bash
 from taa.search_and_augment import search_and_augment
 
-abspath = '/home/renshuhuai/Text-AutoAugment' # Modify to your working directory
+abspath = '/home/renshuhuai/text-autoaugment' # Modify to your working directory
 dataset = 'sst2' # any text classification dataset of GLUE (https://huggingface.co/datasets/viewer/?dataset=glue)
 n_aug = 8 # augment each text sample n_aug times
 
@@ -42,16 +44,26 @@ n_aug = 8 # augment each text sample n_aug times
 augmented_train_dataset = search_and_augment(dataset=dataset, abspath=abspath, n_aug=n_aug)
 ```
 
-You can also train a model on the datasets augmented by our pre-searched policy (Take [IMDB](https://huggingface.co/datasets/imdb) as an example):
+The default setting of some hyper-parameters, e.g., `batch_size`, `epoch`, `train_examples_per_class`, etc, are in [bert_huggingface.yaml](taa/confs/bert_huggingface.yaml).
+You can also create your own config file referring to the above file, like `/path/to/your/config.yaml`, then pass it into the `search_and_augment` function: 
+
+```bash
+augmented_train_dataset = search_and_augment(dataset=dataset, abspath=abspath, n_aug=n_aug, configfile="/path/to/your/config.yaml")
+```
+
+The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 gpus and 40 cpus for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code.   
+
+##### Use our pre-searched policy
+
+To train a model on the datasets augmented by our pre-searched policy, please use (Take [IMDB](https://huggingface.co/datasets/imdb) as an example):
 ```bash
 from taa.search_and_augment import augment_with_presearched_policy
 
-abspath = '/home/renshuhuai/Text-AutoAugment' # Modify to your working directory
 dataset = 'imdb' # Can be chosen from ['imdb', 'sst5', 'trec', 'yelp2', 'yelp5']
 n_aug = 8 # augment each text sample n_aug times
 
 # return the augmented train dataset in the form of torch.utils.data.Dataset
-augmented_train_dataset = augment_with_presearched_policy(dataset=dataset, abspath=abspath, n_aug=n_aug)
+augmented_train_dataset = augment_with_presearched_policy(dataset=dataset, n_aug=n_aug)
 ```
 
 More pre-searched policies will be coming soon.
@@ -66,7 +78,7 @@ Please run [huggingface_lowresource.sh](taa/script/huggingface_lowresource.sh) o
 
 ## Contact
 
-If you have any questions related to the code or the paper, feel free to email Shuhuai (renshuhuai007 [AT] gmail [DOT] com).
+If you have any questions related to the code or the paper, feel free to open an issue or email Shuhuai (renshuhuai007 [AT] gmail [DOT] com).
 
 ## Acknowledgments
 Code refers to: [fast-autoaugment](https://github.com/kakaobrain/fast-autoaugment).

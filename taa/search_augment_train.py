@@ -17,13 +17,14 @@ from .text_networks import get_model, num_class, get_num_class
 from transformers import BertForSequenceClassification, Trainer, TrainingArguments, BertTokenizerFast
 from .common import get_logger, add_filehandler
 from .utils.train_tfidf import train_tfidf
+import joblib
 
 
-def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy_opt, save_path=None, only_eval=False):   
+def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy_opt, save_path=None, only_eval=False):
     transformers.logging.set_verbosity_info()
     logger = get_logger('Text AutoAugment')
     logger.setLevel(logging.INFO)
-    
+
     config = C.get()
     dataset_type = config['dataset']
     model_type = config['model']['type']
@@ -37,10 +38,9 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
     train_dataset = augmented_train_dataset
     val_dataset = general_dataset(valid_examples, tokenizer, text_transform=None)
     test_dataset = general_dataset(test_examples, tokenizer, text_transform=None)
-    
+
     do_train = True
     logging_dir = os.path.join('logs/%s_%s/%s' % (dataset_type, model_type, tag))
-
 
     if save_path and os.path.exists(save_path):
         model_name_or_path = save_path
@@ -56,10 +56,12 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
         logging_dir = None
         per_device_train_batch_size = config['per_device_train_batch_size']
     else:
-        per_device_train_batch_size = int(config['per_device_train_batch_size'] / torch.cuda.device_count())  # To make batch size equal to that in policy opt phase
-    
+        per_device_train_batch_size = int(config[
+                                              'per_device_train_batch_size'] / torch.cuda.device_count())  # To make batch size equal to that in policy opt phase
+
     print('per_device_train_batch_size: ', per_device_train_batch_size)
-    warmup_steps = math.ceil(len(train_dataset) / config['per_device_train_batch_size'] * config['epoch'] * 0.1)  # number of warmup steps for learning rate scheduler
+    warmup_steps = math.ceil(len(train_dataset) / config['per_device_train_batch_size'] * config[
+        'epoch'] * 0.1)  # number of warmup steps for learning rate scheduler
     print('warmup_steps: ', warmup_steps)
     # create model
     training_args = TrainingArguments(
@@ -109,11 +111,11 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
     result = trainer.predict(test_dataset)
     logits = result.predictions
     predictions = np.argmax(logits, axis=1)
- 
+
     predict_df = pd.read_csv('SST-2.tsv', sep='\t')
     predict_df['prediction'] = predictions
     predict_df.to_csv('SST-2.tsv', sep='\t', index=False)
-    
+
     if policy_opt:
         shutil.rmtree(save_path)
     return result
@@ -123,7 +125,7 @@ if __name__ == '__main__':
     _ = C('confs/bert_huggingface.yaml')
 
     # search augmentation policy for specific dataset
-    # search_policy(dataset='sst2', configfile='bert_huggingface.yaml', abspath='/home/wangyuxiang/Text_AutoAugment/text-autoaugment' )
+    # search_policy(dataset='sst2', configfile='bert_huggingface.yaml', abspath='/home/renshuhuai/text-autoaugment' )
 
     train_dataset = load_dataset('glue', 'sst2', split='train')
     valid_dataset = load_dataset('glue', 'sst2', split='validation')
@@ -131,8 +133,9 @@ if __name__ == '__main__':
 
     # generate augmented dataset
     configfile = 'bert_huggingface.yaml'
-    policy_path = '/home/wangyuxiang/Text_AutoAugment/text-autoaugment/final_policy/sst2_Bert_seed59_train-npc50_n-aug8_ir1.00_taa.pkl'
-    augmented_train_dataset = augment(dataset=train_dataset, policy_path=policy_path, n_aug=8, configfile=configfile)
+    policy_path = '/home/renshuhuai/text-autoaugment/final_policy/sst2_Bert_seed59_train-npc50_n-aug8_ir1.00_taa.pkl'
+    policy = joblib.load(policy_path)
+    augmented_train_dataset = augment(dataset=train_dataset, policy=policy, n_aug=8, configfile=configfile)
 
     # training
     dataset_type = C.get()['dataset']
@@ -143,7 +146,8 @@ if __name__ == '__main__':
 
     tag = '%s_%s_with_found_policy' % (dataset_type, model_type)
     save_path = os.path.join('models', tag)
-    
-    result = train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy_opt=False, save_path=save_path, only_eval=True)
+
+    result = train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy_opt=False,
+                        save_path=save_path, only_eval=True)
     # for k,v in result.items():
     #     print('%s:%s' % (k,v))

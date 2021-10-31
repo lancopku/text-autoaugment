@@ -18,7 +18,7 @@ def train_tfidf(dataset, data_path=None):
     data_config = C.get()['data_config']
     if not os.path.exists(model_path):
         print('make model directory')
-        os.mkdir(model_path)
+        os.makedirs(model_path)
 
         dataset = load_dataset(data_config, dataset, split='train')
         examples = get_examples(dataset)

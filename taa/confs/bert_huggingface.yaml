@@ -2,8 +2,8 @@ model:
   type: Bert
 dataset: sst2
 data_config: glue
-dataroot: /home/renshuhuai/TextAutoAugment/data
-abspath: /home/renshuhuai/TextAutoAugment
+dataroot: /home/renshuhuai/text-autoaugment/data
+abspath: /home/renshuhuai/text-autoaugment
 aug: sst2
 per_device_train_batch_size: 64
 per_device_eval_batch_size: 128
@@ -25,4 +25,5 @@ valid:
 test:
   npc: 50  
 num_search: 200
-
+num_gpus: 4
+num_cpus: 40

@@ -94,17 +94,14 @@ def objective(config, checkpoint_dir=None):
                 elapsed_time=gpu_secs, done=True)
 
 
-def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=12, num_op=2):
+def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=4, num_op=2):
     '''search for a customized policy with trained parameters for text augmentation'''
     logger.info('----- Search Test-Time Augmentation Policies -----')
     logger.info('-' * 51)
 
-    w = PyStopwatch()
-
-    ray.init(num_gpus=4, num_cpus=40)
-
     logger.info('loading configuration...')
-    # _ = C('confs/%s' % configfile)
+    if configfile is not None:
+        _ = C(configfile)
     C.get()['dataset'] = dataset
     C.get()['num_search'] = num_search
     C.get()['num_policy'] = num_policy
@@ -126,10 +123,15 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     test_npc = C.get()['test']['npc']
     num_search = C.get()['num_search']
     copied_c = copy.deepcopy(C.get().conf)
+    num_gpus = C.get()['num_gpus']
+    num_cpus = C.get()['num_cpus']
+
+    logger.info('initialize ray...')
+    # ray.init(num_cpus=num_cpus, local_mode=True)  # used for debug
+    ray.init(num_gpus=num_gpus, num_cpus=num_cpus)
 
     train_tfidf(dataset_type)  # calculate tf-idf score for TS and TI operations
 
-    w.start(tag='search')
     if method == 'taa':
         pkl_path = os.path.join(abspath, 'final_policy')
         if not os.path.exists(pkl_path):
@@ -138,7 +140,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                                   (dataset_type, model_type, seed, train_npc, n_aug, ir, method))
         total_computation = 0
         if os.path.isfile(policy_dir):  # have been searched
-            logger.info('use existing policy_dir...')
+            logger.info('use existing policy from %s' % policy_dir)
             final_policy = joblib.load(policy_dir)[:topN]
         else:
             ops = augment_list()  # get all possible operations
@@ -189,13 +191,13 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                             (result['opt_object'], result['eval_accuracy'],
                              result['n_dist'], policy))
                 all_policy.extend(policy)
-            logger.info('pickle all_policy_dir...')
 
             for result in results[:topN]:  # get top #args.topN in #arg.num_search trails
                 policy = policy_decoder(result['config'], num_policy, num_op)
                 policy = remove_deplicates(policy)
                 final_policy.extend(policy)
 
+            logger.info('save searched policy to %s' % policy_dir)
             logger.info(json.dumps(final_policy))
             joblib.dump(final_policy, policy_dir)
     elif method == 'random_taa':
@@ -210,6 +212,8 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     else:
         total_computation = 0
         final_policy = method
+    logger.info('total computation for policy search is %.2f' % total_computation)
+    return final_policy
 
 
 if __name__ == '__main__':
@@ -225,7 +229,7 @@ if __name__ == '__main__':
     parser.add_argument('--num-search', type=int, default=200)
     parser.add_argument('--redis', type=str, default='localhost:6379')
     parser.add_argument('--smoke-test', action='store_true')  # default to False
-    parser.add_argument('--abspath', type=str, default='/home/renshuhuai/TextAutoAugment')
+    parser.add_argument('--abspath', type=str, default='/home/renshuhuai/text-autoaugment')
     parser.add_argument('--n-aug', type=int, default=16,
                         help='magnification of augmentation. synthesize n-aug for each given sample')
     parser.add_argument('--train-npc', type=int, default=40, help='train example num per class')
@@ -250,9 +254,6 @@ if __name__ == '__main__':
                                           args.ir, C.get()['method'])))
     logger.info('configuration...')
     logger.info(json.dumps(C.get().conf, sort_keys=True, indent=4))
-    logger.info('initialize ray...')
-    # ray.init(num_cpus=4, local_mode=True)  # used for debug
-    ray.init(num_gpus=4, num_cpus=40)
 
     copied_c = copy.deepcopy(C.get().conf)
 
@@ -287,90 +288,10 @@ if __name__ == '__main__':
     logger.info('----- Search Test-Time Augmentation Policies -----')
     logger.info('-' * 51)
 
-    train_tfidf(dataset_type, dataroot)  # calculate tf-idf score for TS and TI operations
-
     w.start(tag='search')
-    if args.method == 'taa':
-        pkl_path = os.path.join(abspath, 'final_policy')
-        if not os.path.exists(pkl_path):
-            os.makedirs(pkl_path)
-        policy_dir = os.path.join(pkl_path, '%s_%s_seed%d_train-npc%d_n-aug%d_ir%.2f_%s.pkl' %
-                                  (dataset_type, model_type, args.seed, args.train_npc, args.n_aug, args.ir,
-                                   args.method))
-        total_computation = 0
-        if os.path.isfile(policy_dir):  # have been searched
-            logger.info('use existing policy_dir...')
-            final_policy = joblib.load(policy_dir)[:args.topN]
-        else:
-            ops = augment_list()  # get all possible operations
-            logger.info(ops)
-            space = {}
-            for i in range(args.num_policy):
-                for j in range(args.num_op):
-                    space['policy_%d_%d' % (i, j)] = tune.choice(list(range(0, len(ops))))
-                    space['prob_%d_%d' % (i, j)] = tune.uniform(0.0, 1.0)
-                    space['level_%d_%d' % (i, j)] = tune.uniform(0.0, 1.0)
-
-            logger.info('size of search space: %d' % len(space))  # 5*2*3=30
-            final_policy = []
-            reward_attr = 'opt_object'
-            name = "search_%s_%s_seed%d_trail%d" % (dataset_type, model_type, args.seed, args.trail)
-            logger.info('name: {}'.format(name))
-            tune_kwargs = {
-                'name': name,
-                'num_samples': 4 if args.smoke_test else args.num_search,
-                'resources_per_trial': {'gpu': 1},
-                'config': {
-                    'dataroot': dataroot,
-                    'tag': 'seed%d_trail%d_train-npc%d_n-aug%d' % (args.seed, args.trail, args.train_npc, args.n_aug),
-                    'num_op': args.num_op, 'num_policy': args.num_policy,
-                },
-                'local_dir': os.path.join(abspath, "ray_results"),
-            }
-            tune_kwargs['config'].update(space)
-            tune_kwargs['config'].update(copied_c)
-            algo = HyperOptSearch()
-            scheduler = AsyncHyperBandScheduler()
-            register_trainable(name, objective)
-            analysis = tune.run(objective, search_alg=algo, scheduler=scheduler, metric=reward_attr, mode="max",
-                                **tune_kwargs)
-            results = [x for x in analysis.results.values()]
-            logger.info("num_samples = %d" % (len(results)))
-            logger.info("select top = %d" % args.topN)
-            results = sorted(results, key=lambda x: x[reward_attr], reverse=True)
-
-            # calculate computation usage
-            for result in results:
-                total_computation += result['elapsed_time']
-
-            all_policy = []
-            for result in results:  # print policy in #arg.num_search trails
-                policy = policy_decoder(result['config'], args.num_policy, args.num_op)
-                logger.info('opt_object=%.4f; eval_accuracy=%.4f; n_dist=%.4f; %s' %
-                            (result['opt_object'], result['eval_accuracy'],
-                             result['n_dist'], policy))
-                all_policy.extend(policy)
-            logger.info('pickle all_policy_dir...')
-            joblib.dump(all_policy, policy_dir)
-
-            for result in results[:args.topN]:  # get top #args.topN in #arg.num_search trails
-                policy = policy_decoder(result['config'], args.num_policy, args.num_op)
-                policy = remove_deplicates(policy)
-                final_policy.extend(policy)
-
-        logger.info(json.dumps(final_policy))
-    elif args.method == 'random_taa':
-        total_computation = 0
-        final_policy = []
-        for i in range(args.num_policy):  # 1
-            sub_policy = []
-            for j in range(args.num_op):  # 2
-                op, _, _ = random.choice(augment_list())
-                sub_policy.append((op.__name__, random.random(), random.random()))
-            final_policy.append(sub_policy)
-    else:
-        total_computation = 0
-        final_policy = args.method
+    final_policy = search_policy(dataset_type, abspath, num_search=args.num_search, num_policy=args.num_policy,
+                                 num_op=args.num_op)
+    w.pause(tag='search')
 
     # Train with Augmentations
     logger.info('-' * 94)

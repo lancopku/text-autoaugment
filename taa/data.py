@@ -130,21 +130,3 @@ def augment(dataset, policy, n_aug, configfile=None):
     augmented_dataset = general_dataset(examples, tokenizer, text_transform=transform_train)
 
     return augmented_dataset
-
-
-if __name__ == '__main__':
-    from theconf import Config as C, ConfigArgumentParser
-
-    parser = ConfigArgumentParser(conflict_handler='resolve')
-    parser.add_argument('--dataroot', type=str, default='/data/private/pretrainedmodels',
-                        help='torchvision data folder')
-    parser.add_argument('--until', type=int, default=5)
-    parser.add_argument('--num-op', type=int, default=2)
-    parser.add_argument('--num-policy', type=int, default=5)
-    parser.add_argument('--num-search', type=int, default=200)
-    parser.add_argument('--cv-ratio', type=float, default=0.4)
-    parser.add_argument('--redis', type=str, default='9.134.78.50:6379')
-    parser.add_argument('--per-class', action='store_true')
-    parser.add_argument('--resume', action='store_true')
-    parser.add_argument('--smoke-test', action='store_true')
-    args = parser.parse_args()
