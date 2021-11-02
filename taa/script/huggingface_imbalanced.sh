@@ -9,11 +9,11 @@ do
     for t in 1 2 3 4 5
     do
       python search.py \
-      -c confs/bert_huggingface.yaml \
+      -c confs/bert_sst2_example.yaml \
       --abspath '/home/renshuhuai/text-autoaugment' \
       --n-aug 1 \
       --num-op 2 \
-      --num-policy 8 \
+      --num-policy 4 \
       --train-npc 1000 \
       --valid-npc 30 \
       --test-npc 30 \

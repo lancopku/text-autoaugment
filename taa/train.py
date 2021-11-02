@@ -40,13 +40,13 @@ def compute_metrics(p):
     }
 
 
-def train_and_eval(tag, dataroot, policy_opt, save_path=None, only_eval=False):
+def train_and_eval(tag, policy_opt, save_path=None, only_eval=False):
     config = C.get()
-    dataset_type = config['dataset']
+    dataset_type = config['dataset']['name']
     model_type = config['model']['type']
     C.get()['tag'] = tag
     
-    train_dataset, val_dataset, test_dataset = get_datasets(dataset_type, dataroot, policy_opt=policy_opt)
+    train_dataset, val_dataset, test_dataset = get_datasets(dataset_type, policy_opt=policy_opt)
 
     do_train = True
     logging_dir = os.path.join('logs/%s_%s/%s' % (dataset_type, model_type, tag))
@@ -108,7 +108,7 @@ def train_and_eval(tag, dataroot, policy_opt, save_path=None, only_eval=False):
                 if file.startswith("checkpoint-"):
                     shutil.rmtree(os.path.join(save_path, file))
 
-    logger.info("evaluating on test set")
+    logger.info("Evaluating on test set")
     # note that when policy_opt, the test_dataset is only a subset of true test_dataset, used for evaluating policy
     result = trainer.evaluate(eval_dataset=test_dataset)
 
@@ -143,24 +143,23 @@ if __name__ == '__main__':
 
     import time
 
-    dataset_type = C.get()['dataset']
-    dataroot = C.get()['dataroot']
+    dataset_type = C.get()['dataset']['name']
     model_type = C.get()['model']['type']
-    train_tfidf(dataset_type, dataroot)  # calculate tf-idf score for TS and TI operations
+    train_tfidf(dataset_type)  # calculate tf-idf score for TS and TI operations
 
     total_computation = 0
 
     t = time.time()
     tag = '%s_%s_with_found_policy' % (dataset_type, model_type) if args.tag == '' else args.tag
     save_path = os.path.join('models', tag) if args.save == '' else args.save
-    result = train_and_eval(tag, dataroot, policy_opt=False, save_path=save_path, only_eval=args.only_eval)
+    result = train_and_eval(tag, policy_opt=False, save_path=save_path, only_eval=args.only_eval)
     elapsed = time.time() - t
 
     config = C.get()
-    logger.info('done.')
-    logger.info('model: %s' % config['model'])
-    logger.info('augmentation: %s' % config['aug'])
+    logger.info('Done.')
+    logger.info('Model: %s' % config['model'])
+    logger.info('Augmentation: %s' % config['aug'])
     logger.info('\n' + json.dumps(result, indent=4))
-    logger.info('elapsed time: %.3f Hours' % (elapsed / 3600.))
+    logger.info('Elapsed time: %.3f Hours' % (elapsed / 3600.))
     logger.info(' '.join(['%s=%.4f;' % (key, result[key]) for key in result.keys()]))
     logger.info(args.save)

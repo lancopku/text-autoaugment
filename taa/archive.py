@@ -172,7 +172,7 @@ def trec():
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
 
 
-def huggingface_dataset():
+def default_policy():
     return [[('synonym_word_substitute', 0.7492730962660217, 0.8816452863413866),
              ('synonym_word_substitute', 0.33184334794125936, 0.5208169910984721)],
             [('random_word_swap', 0.603927626550949, 0.03168123331963181),

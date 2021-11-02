@@ -46,7 +46,7 @@ def step_w_log(self):
         if not trial.last_result:
             continue
         best_opt_object = max(best_opt_object, trial.last_result['opt_object'])
-    print('iter', self._iteration, 'opt_object=%.3f' % best_opt_object, cnts, end='\r')
+    print('Iter', self._iteration, 'opt_object=%.3f' % best_opt_object, cnts, end='\r')
     return original(self)
 
 
@@ -63,11 +63,11 @@ def _get_path(dataset, model, tag=None):
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'models/%s_%s' % (dataset, model))
 
 
-def train_model_parallel(tag, config, dataroot, augment, save_path=None, only_eval=False):
+def train_model_parallel(tag, config, augment, save_path=None, only_eval=False):
     C.get()  # useless unless C._instance=None
     C.get().conf = config
     C.get()['aug'] = augment
-    result = train_and_eval(tag, dataroot, policy_opt=False, save_path=save_path, only_eval=only_eval)
+    result = train_and_eval(tag, policy_opt=False, save_path=save_path, only_eval=only_eval)
     return C.get()['model']['type'], result
 
 
@@ -75,7 +75,6 @@ def objective(config, checkpoint_dir=None):
     '''evaluate one searched policy'''
     C.get()
     C.get().conf = config
-    dataroot = C.get()['dataroot']
 
     # setup - provided augmentation rules
     C.get()['aug'] = policy_decoder(config, config['num_policy'], config['num_op'])
@@ -85,7 +84,7 @@ def objective(config, checkpoint_dir=None):
     tag = ''.join([str(i) for i in sum(sum(config['aug'], []), ()) if type(i) is float])[:15]
     save_path = _get_path('', '', tag=tag)
 
-    result = train_and_eval(config['tag'], dataroot, policy_opt=True, save_path=save_path, only_eval=False)
+    result = train_and_eval(config['tag'], policy_opt=True, save_path=save_path, only_eval=False)
 
     gpu_secs = (time.time() - start_t) * torch.cuda.device_count()
     tune.report(eval_loss=result['eval_loss'], eval_accuracy=result['eval_accuracy'],
@@ -99,16 +98,15 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     logger.info('----- Search Test-Time Augmentation Policies -----')
     logger.info('-' * 51)
 
-    logger.info('loading configuration...')
+    logger.info('Loading configuration...')
     if configfile is not None:
         _ = C(configfile)
-    C.get()['dataset'] = dataset
+    C.get()['dataset']['name'] = dataset
     C.get()['num_search'] = num_search
     C.get()['num_policy'] = num_policy
     C.get()['num_op'] = num_op
     C.get()['abspath'] = abspath
-    dataset_type = C.get()['dataset']
-    dataroot = C.get()['dataroot']
+    dataset_type = C.get()['dataset']['name']
     model_type = C.get()['model']['type']
     n_aug = C.get()['n_aug']
     num_op = C.get()['num_op']
@@ -126,7 +124,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     num_gpus = C.get()['num_gpus']
     num_cpus = C.get()['num_cpus']
 
-    logger.info('initialize ray...')
+    logger.info('Initialize ray...')
     # ray.init(num_cpus=num_cpus, local_mode=True)  # used for debug
     ray.init(num_gpus=num_gpus, num_cpus=num_cpus)
 
@@ -140,7 +138,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                                   (dataset_type, model_type, seed, train_npc, n_aug, ir, method))
         total_computation = 0
         if os.path.isfile(policy_dir):  # have been searched
-            logger.info('use existing policy from %s' % policy_dir)
+            logger.info('Use existing policy from %s' % policy_dir)
             final_policy = joblib.load(policy_dir)[:topN]
         else:
             ops = augment_list()  # get all possible operations
@@ -152,7 +150,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                     space['prob_%d_%d' % (i, j)] = tune.uniform(0.0, 1.0)
                     space['level_%d_%d' % (i, j)] = tune.uniform(0.0, 1.0)
 
-            logger.info('size of search space: %d' % len(space))  # 5*2*3=30
+            logger.info('Size of search space: %d' % len(space))  # 5*2*3=30
             final_policy = []
             reward_attr = 'opt_object'
             name = "search_%s_%s_seed%d_trail%d" % (dataset_type, model_type, seed, trail)
@@ -162,7 +160,6 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                 'num_samples': num_search,
                 'resources_per_trial': {'gpu': 1},
                 'config': {
-                    'dataroot': dataroot,
                     'tag': 'seed%d_trail%d_train-npc%d_n-aug%d' % (seed, trail, train_npc, n_aug),
                     'num_op': num_op, 'num_policy': num_policy,
                 },
@@ -197,7 +194,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
                 policy = remove_deplicates(policy)
                 final_policy.extend(policy)
 
-            logger.info('save searched policy to %s' % policy_dir)
+            logger.info('Save searched policy to %s' % policy_dir)
             logger.info(json.dumps(final_policy))
             joblib.dump(final_policy, policy_dir)
     elif method == 'random_taa':
@@ -212,7 +209,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     else:
         total_computation = 0
         final_policy = method
-    logger.info('total computation for policy search is %.2f' % total_computation)
+    logger.info('Total computation for policy search is %.2f' % total_computation)
     return final_policy
 
 
@@ -244,15 +241,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    dataset_type = C.get()['dataset']
-    dataroot = C.get()['dataroot']
+    dataset_type = C.get()['dataset']['name']
     model_type = C.get()['model']['type']
     abspath = args.abspath
 
     add_filehandler(logger, os.path.join('models', '%s_%s_op%d_policy%d_n-aug%d_ir%.2f_%s.log' %
                                          (dataset_type, model_type, args.num_op, args.num_policy, args.n_aug,
                                           args.ir, C.get()['method'])))
-    logger.info('configuration...')
+    logger.info('Configuration:')
     logger.info(json.dumps(C.get().conf, sort_keys=True, indent=4))
 
     copied_c = copy.deepcopy(C.get().conf)
@@ -265,20 +261,20 @@ if __name__ == '__main__':
     w.start(tag='train_no_aug')
     model_path = _get_path(dataset_type, model_type, 'pretrained_trail%d_train-npc%d_seed%d' %
                            (args.trail, args.train_npc, args.seed))
-    logger.info('model path: {}'.format(model_path))
+    logger.info('Model path: {}'.format(model_path))
 
     pretrain_results = train_model_parallel('pretrained_trail%d_train-npc%d_n-aug%d' %
-                                            (args.trail, args.train_npc, args.n_aug), copy.deepcopy(copied_c), dataroot,
+                                            (args.trail, args.train_npc, args.n_aug), copy.deepcopy(copied_c),
                                             augment=None, save_path=model_path,
                                             only_eval=True if os.path.isfile(model_path) else False)
-    logger.info('getting results...')
+    logger.info('Getting results:')
     for train_mode in ['pretrained']:
         avg = 0.
         r_model, r_dict = pretrain_results
         log = ' '.join(['%s=%.4f;' % (key, r_dict[key]) for key in r_dict.keys()])
         logger.info('[%s] ' % train_mode + log)
     w.pause('train_no_aug')
-    logger.info('processed in %.4f secs' % w.get_elapsed('train_no_aug'))
+    logger.info('Processed in %.4f secs' % w.get_elapsed('train_no_aug'))
     shutil.rmtree(model_path)
     if args.until == 1:
         sys.exit(0)
@@ -303,9 +299,9 @@ if __name__ == '__main__':
 
     augment_path = _get_path(dataset_type, model_type, 'augment_trail%d_train-npc%d_n-aug%d_%s_seed%d_ir%.2f' %
                              (args.trail, args.train_npc, args.n_aug, args.method, args.seed, args.ir))
-    logger.info('getting results...')
+    logger.info('Getting results:')
     final_results = train_model_parallel('augment_trail%d_train-npc%d_n-aug%d' %
-                                         (args.trail, args.train_npc, args.n_aug), copy.deepcopy(copied_c), dataroot,
+                                         (args.trail, args.train_npc, args.n_aug), copy.deepcopy(copied_c),
                                          augment=final_policy, save_path=augment_path, only_eval=False)
 
     for train_mode in ['augment']:
@@ -314,7 +310,7 @@ if __name__ == '__main__':
         log = ' '.join(['%s=%.4f;' % (key, r_dict[key]) for key in r_dict.keys()])
         logger.info('[%s] ' % train_mode + log)
     w.pause('train_aug')
-    logger.info('processed in %.4f secs' % w.get_elapsed('train_aug'))
+    logger.info('Processed in %.4f secs' % w.get_elapsed('train_aug'))
 
     logger.info(w)
     shutil.rmtree(augment_path)

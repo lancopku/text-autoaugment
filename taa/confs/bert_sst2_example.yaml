@@ -1,8 +1,11 @@
 model:
   type: Bert
-dataset: sst2
-data_config: glue
-dataroot: /home/renshuhuai/text-autoaugment/data
+dataset:
+  path: glue
+  name: sst2
+  data_dir:
+  data_files:
+  text_key: sentence
 abspath: /home/renshuhuai/text-autoaugment
 aug: sst2
 per_device_train_batch_size: 64

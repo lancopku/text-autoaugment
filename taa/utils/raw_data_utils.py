@@ -587,16 +587,17 @@ def get_processor(task_name):
     return processor
 
 
-def get_examples(dataset):
+def get_examples(dataset, text_key='text'):
     """get dataset examples"""
     examples = []
     for i in range(dataset.num_rows):
         guid = i
-        text_a = dataset[i]['sentence']
+        text_a = dataset[i][text_key]
         label = dataset[i]['label']
         text_a = clean_web_text(text_a)
         examples.append(InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
     return examples
+
 
 def general_split(examples, test_size, train_size, n_splits=2, split_idx=0):
     """used for datasets on huggingface"""

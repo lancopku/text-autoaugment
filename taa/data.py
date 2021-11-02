@@ -18,7 +18,7 @@ from transformers import BertTokenizer, BertTokenizerFast
 from .text_networks import num_class
 import math
 import copy
-from .archive import policy_map, huggingface_dataset
+from .archive import policy_map, default_policy
 import multiprocessing
 from functools import partial
 import time
@@ -30,38 +30,46 @@ logger = get_logger('Text AutoAugment')
 logger.setLevel(logging.INFO)
 
 
-def get_datasets(dataset, dataroot, policy_opt):
+def get_datasets(dataset, policy_opt):
     # do data augmentation
     transform_train = Compose([])
     aug = C.get()['aug']
-    data_config = C.get()['data_config']
+    path = C.get()['dataset']['path']
+    data_dir = C.get()['dataset']['data_dir']
+    data_files = C.get()['dataset']['data_files']
+    text_key = C.get()['dataset']['text_key']
+
     logger.info('aug: {}'.format(aug))
     if isinstance(aug, list) or aug in ['taa', 'random_taa']:  # using sampled policies
         transform_train.transforms.insert(0, Augmentation(aug))
     elif aug in list(policy_map.keys()):  # use pre-searched policy
         transform_train.transforms.insert(0, Augmentation(policy_map[aug]))
     else:
-        transform_train.transforms.insert(0, Augmentation(huggingface_dataset()))
+        transform_train.transforms.insert(0, Augmentation(default_policy()))
 
     # load dataset
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
-    train_dataset = load_dataset(data_config, dataset, split='train')
-    valid_dataset = load_dataset(data_config, dataset, split='validation')
-    test_dataset = load_dataset(data_config, dataset, split='test')
+    if path is None:
+        train_dataset = load_dataset(path=dataset, data_dir=data_dir, data_files=data_files, split='train')
+        test_dataset = load_dataset(path=dataset, data_dir=data_dir, data_files=data_files, split='test')
+    else:
+        train_dataset = load_dataset(path=path, name=dataset, data_dir=data_dir, data_files=data_files, split='train')
+        test_dataset = load_dataset(path=path, name=dataset, data_dir=data_dir, data_files=data_files, split='test')
 
     label_names = train_dataset.features['label'].names
     class_num = train_dataset.features['label'].num_classes
     label_mapping = {}
     for i in range(class_num):
         label_mapping[label_names[i]] = i
-    all_train_examples = get_examples(train_dataset)
+    all_train_examples = get_examples(train_dataset, text_key)
 
     if C.get()['train']['npc'] == C.get()['valid']['npc'] == C.get()['test']['npc'] == -1:
         assert policy_opt is False
         all_train_examples_num = len(all_train_examples)
         train_examples, valid_examples = general_split(all_train_examples, int(0.2 * all_train_examples_num),
                                                        int(0.8 * all_train_examples_num))
+        test_examples = get_examples(test_dataset, text_key)
     else:
         train_examples, _ = general_split(all_train_examples, class_num * C.get()['valid']['npc'],
                                           class_num * C.get()['train']['npc'])
@@ -69,9 +77,8 @@ def get_datasets(dataset, dataroot, policy_opt):
         all_train_examples = list(set(all_train_examples) - set(train_examples))
         valid_examples, test_examples = general_split(all_train_examples, class_num * C.get()['test']['npc'],
                                                       class_num * C.get()['valid']['npc'])
-
-    if not policy_opt:
-        test_examples = get_examples(test_dataset)
+        if not policy_opt:
+            test_examples = get_examples(test_dataset, text_key)
 
     train_dataset = general_dataset(train_examples, tokenizer, text_transform=transform_train)
     val_dataset = general_dataset(valid_examples, tokenizer, text_transform=None)
@@ -120,13 +127,14 @@ def augment(dataset, policy, n_aug, configfile=None):
     # get searched augmentation policy
     #   _ = C('confs/%s' % configfile)
     C.get()['n_aug'] = n_aug
+    text_key = C.get()['dataset']['text_key']
 
     transform_train = Compose([])
     transform_train.transforms.insert(0, Augmentation(policy))
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
-    examples = get_examples(dataset)
+    examples = get_examples(dataset, text_key)
     augmented_dataset = general_dataset(examples, tokenizer, text_transform=transform_train)
 
     return augmented_dataset

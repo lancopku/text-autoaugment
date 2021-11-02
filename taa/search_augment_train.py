@@ -26,14 +26,15 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
     logger.setLevel(logging.INFO)
 
     config = C.get()
-    dataset_type = config['dataset']
+    dataset_type = config['dataset']['name']
     model_type = config['model']['type']
     C.get()['tag'] = tag
+    text_key = C.get()['dataset']['text_key']
 
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
 
-    valid_examples = get_examples(valid_dataset)
-    test_examples = get_examples(test_dataset)
+    valid_examples = get_examples(valid_dataset, text_key)
+    test_examples = get_examples(test_dataset, text_key)
 
     train_dataset = augmented_train_dataset
     val_dataset = general_dataset(valid_examples, tokenizer, text_transform=None)
@@ -107,14 +108,14 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
 
     # result['n_dist'] = train_dataset.aug_n_dist
     # result['opt_object'] = result['eval_accuracy']
-    logger.info("predicting on test set")
+    logger.info("Predicting on test set")
     result = trainer.predict(test_dataset)
     logits = result.predictions
     predictions = np.argmax(logits, axis=1)
 
-    predict_df = pd.read_csv('SST-2.tsv', sep='\t')
+    predict_df = pd.read_csv('%s.tsv' % dataset_type, sep='\t')
     predict_df['prediction'] = predictions
-    predict_df.to_csv('SST-2.tsv', sep='\t', index=False)
+    predict_df.to_csv('%s.tsv' % dataset_type, sep='\t', index=False)
 
     if policy_opt:
         shutil.rmtree(save_path)
@@ -122,27 +123,26 @@ def train_bert(tag, augmented_train_dataset, valid_dataset, test_dataset, policy
 
 
 if __name__ == '__main__':
-    _ = C('confs/bert_huggingface.yaml')
+    _ = C('confs/bert_sst2_example.yaml')
 
     # search augmentation policy for specific dataset
-    # search_policy(dataset='sst2', configfile='bert_huggingface.yaml', abspath='/home/renshuhuai/text-autoaugment' )
+    # search_policy(dataset='sst2', configfile='bert_sst2_example.yaml', abspath='/home/renshuhuai/text-autoaugment' )
 
     train_dataset = load_dataset('glue', 'sst2', split='train')
     valid_dataset = load_dataset('glue', 'sst2', split='validation')
     test_dataset = load_dataset('glue', 'sst2', split='test')
 
     # generate augmented dataset
-    configfile = 'bert_huggingface.yaml'
+    configfile = 'bert_sst2_example.yaml'
     policy_path = '/home/renshuhuai/text-autoaugment/final_policy/sst2_Bert_seed59_train-npc50_n-aug8_ir1.00_taa.pkl'
     policy = joblib.load(policy_path)
     augmented_train_dataset = augment(dataset=train_dataset, policy=policy, n_aug=8, configfile=configfile)
 
     # training
-    dataset_type = C.get()['dataset']
-    dataroot = C.get()['dataroot']
+    dataset_type = C.get()['dataset']['name']
     model_type = C.get()['model']['type']
 
-    train_tfidf(dataset_type, dataroot)  # calculate tf-idf score for TS and TI operations
+    train_tfidf(dataset_type)  # calculate tf-idf score for TS and TI operations
 
     tag = '%s_%s_with_found_policy' % (dataset_type, model_type)
     save_path = os.path.join('models', tag)

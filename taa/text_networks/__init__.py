@@ -8,6 +8,7 @@ from transformers import BertTokenizer, BertForSequenceClassification
 from datasets import load_dataset
 from theconf import Config as C
 
+
 def get_model(conf, num_class=10, data_parallel=True):
     name = conf['model']['type']
 
@@ -46,7 +47,10 @@ def num_class(dataset):
 
 
 def get_num_class(dataset):
-    data_config = C.get()['data_config']
-    dataset = load_dataset(data_config, dataset, split='train')
+    path = C.get()['dataset']['path']
+    if path is None:
+        dataset = load_dataset(path=dataset, split='train')
+    else:
+        dataset = load_dataset(path=path, name=dataset, split='train')
     return dataset.features['label'].num_classes
 

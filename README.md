@@ -5,7 +5,22 @@ This repository contains the code for our paper [Text AutoAugment: Learning Comp
 
 **************************** Updates ****************************
 - 21.10.27: We make taa installable as a package and adapt to [huggingface/transformers](https://github.com/huggingface/transformers). 
-Now you can search augmentation policy for your custom dataset with a few lines of code.
+Now you can search augmentation policy for your custom dataset with **TWO** lines of code.
+
+## Quick Links
+* [Overview](#overview)
+* [Getting Started](#getting-started)
+* [Prepare environment](#prepare-environment)
+* [Use TAA with Huggingface](#use-taa-with-huggingface)
+  - [Get augmented training dataset with TAA policy](#get-augmented-training-dataset-with-taa-policy)
+    * [Search for the optimal policy](#search-for-the-optimal-policy)
+    * [Use our pre-searched policy](#use-our-pre-searched-policy)
+  - [Fine-tune a new model on the augmented training dataset](#fine-tune-a-new-model-on-the-augmented-training-dataset)
+* [Reproduce results in the paper](#reproduce-results-in-the-paper)
+* [Contact](#contact)
+* [Acknowledgments](#acknowledgments)
+* [Citation](#citation)
+* [License](#license)
 
 ## Overview
 1. We  present  a  learnable  and  compositional framework for data augmentation.  Our proposed algorithm automatically searches for the optimal compositional policy, which improves the diversity and quality of augmented samples.
@@ -32,26 +47,54 @@ python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_percep
 
 ##### Search for the optimal policy
 
-You can search for the optimal policy on classification datasets supported by [huggingface/datasets](https://huggingface.co/datasets) (Take [SST2](https://huggingface.co/datasets/glue#sst2) as an example):
+You can search for the optimal policy on classification datasets supported by [huggingface/datasets](https://huggingface.co/datasets):
 ```bash
 from taa.search_and_augment import search_and_augment
 
-abspath = '/home/renshuhuai/text-autoaugment' # Modify to your working directory
-dataset = 'sst2' # any text classification dataset of GLUE (https://huggingface.co/datasets/viewer/?dataset=glue)
-n_aug = 8 # augment each text sample n_aug times
-
 # return the augmented train dataset in the form of torch.utils.data.Dataset
-augmented_train_dataset = search_and_augment(dataset=dataset, abspath=abspath, n_aug=n_aug)
+augmented_train_dataset = search_and_augment(configfile="/path/to/your/config.yaml")
 ```
 
-The default setting of some hyper-parameters, e.g., `batch_size`, `epoch`, `train_examples_per_class`, etc, are in [bert_huggingface.yaml](taa/confs/bert_huggingface.yaml).
-You can also create your own config file referring to the above file, like `/path/to/your/config.yaml`, then pass it into the `search_and_augment` function: 
+The `configfile` contains some preset arguments, including:
 
-```bash
-augmented_train_dataset = search_and_augment(dataset=dataset, abspath=abspath, n_aug=n_aug, configfile="/path/to/your/config.yaml")
-```
+- `model`:
+  - `type`: *backbone model*
+- `dataset`:
+  - `path`: *Path or name of the dataset*
+  - `name`: *Defining the name of the dataset configuration*
+  - `data_dir`: *Defining the data_dir of the dataset configuration*
+  - `data_files`: *Path(s) to source data file(s)*
+  
+  All the augments above are used for the `load_dataset()` function in [huggingface/datasets](https://huggingface.co/datasets). Please refer to [link](https://huggingface.co/docs/datasets/v1.12.1/package_reference/loading_methods.html#datasets.load_dataset) for details. 
+  - `text_key`: *Used to get text from a data instance (`dict` form in huggingface/datasets. See this [IMDB example](https://huggingface.co/datasets/imdb#data-instances).)*
+- `abspath`: *Your working directory*
+- `aug`: *Pre-searched policy*. Now we support imdb, sst5, trec, yelp2 and yelp5. See [archive.py](taa/archive.py).
+- `per_device_train_batch_size`: *Batch size per device for training*
+- `per_device_eval_batch_size`: *Batch size per device for evaluation*
+- `epoch`: *Training epoch*
+- `lr`: *Learning rate*
+- `max_seq_length`
+- `n_aug`: *Augment each text sample n_aug times*
+- `num_op`: *Number of operations per sub-policy*
+- `num_policy`: *Number of sub-policy per policy*
+- `method`: *Search method (taa)*
+- `topN`: *Ensemble topN sub-policy to get final policy*
+- `ir`: *Imbalance rate*
+- `seed`: *Random seed*
+- `trail`: *Trail under current random seed*
+- `train`:
+  - `npc`: *Number of examples per class in the training dataset*
+- `valid`:
+  - `npc`: *Number of examples per class in the val dataset*
+- `test`:
+  - `npc`: *Number of examples per class in the test dataset*
+- `num_search`: *Number of optimization iteration*
+- `num_gpus`: *Number of GPUs used in RAY*
+- `num_cpus`: *Number of CPUs used in RAY*
 
-The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 gpus and 40 cpus for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code.   
+**ATTENTION**: [bert_sst2_example.yaml](taa/confs/bert_sst2_example.yaml) is a config example for BERT model and [SST2](https://huggingface.co/datasets/glue#sst2) dataset. You can follow this example to create your own config file. For instance, if you only want to change the dataset from `sst2` to `imdb`, just delete the `sst2` in the `'path'` argument, modify the `'name'` to `imdb` and modity the `'text_key'` to `text`.
+
+**WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 
 ##### Use our pre-searched policy
 
@@ -59,14 +102,21 @@ To train a model on the datasets augmented by our pre-searched policy, please us
 ```bash
 from taa.search_and_augment import augment_with_presearched_policy
 
-dataset = 'imdb' # Can be chosen from ['imdb', 'sst5', 'trec', 'yelp2', 'yelp5']
-n_aug = 8 # augment each text sample n_aug times
-
 # return the augmented train dataset in the form of torch.utils.data.Dataset
-augmented_train_dataset = augment_with_presearched_policy(dataset=dataset, n_aug=n_aug)
+augmented_train_dataset = augment_with_presearched_policy(configfile="/path/to/your/config.yaml")
 ```
 
-More pre-searched policies will be coming soon.
+Now we support imdb, sst5, trec, yelp2 and yelp5. See [archive.py](taa/archive.py) for details. 
+
+This table lists the test accuracy (%) of pre-searched TAA policy on **full** datasets:
+
+| Dataset |  IMDB | SST-5 |  TREC | YELP-2 | YELP-5 |
+|---------|:-----:|:-----:|:-----:|:------:|:------:|
+| No Aug  | 88.77 | 52.29 | 96.40 |  95.85 |  65.55 |
+| TAA     | 89.37 | 52.55 | 97.07 |  96.04 |  65.73 |
+| n_aug   |   4   |   4   |   4   |    2   |    2   |
+
+More pre-searched policies and their performance will be coming soon. 
 
 #### Fine-tune a new model on the augmented training dataset
 

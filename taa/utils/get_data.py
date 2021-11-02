@@ -6,7 +6,6 @@ import csv
 import sys
 import re
 dataroot = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data')
-print('Beginning download of datasets')
 
 
 def progress(block_num, block_size, total_size):

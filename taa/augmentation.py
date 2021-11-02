@@ -26,7 +26,7 @@ def random_word_delete(text, m):
 
 
 def tfidf_word_insert(text, m):  # default top_k=5
-    dataset_type = C.get()['dataset']
+    dataset_type = C.get()['dataset']['name']
     abspath = C.get()['abspath']
     max_seq_length = C.get()['max_seq_length']
     model_path = os.path.join(abspath, 'models/tfidf/%s' % dataset_type)
@@ -35,7 +35,7 @@ def tfidf_word_insert(text, m):  # default top_k=5
 
 
 def tfidf_word_substitute(text, m):  # default top_k=5
-    dataset_type = C.get()['dataset']
+    dataset_type = C.get()['dataset']['name']
     abspath = C.get()['abspath']
     max_seq_length = C.get()['max_seq_length']
     model_path = os.path.join(abspath, 'models/tfidf/%s' % dataset_type)
