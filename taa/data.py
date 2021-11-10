@@ -4,27 +4,38 @@ import os
 import random
 import torch
 from torch.utils.data import SubsetRandomSampler, Sampler, Subset, ConcatDataset
-from .transforms import Compose
 from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from theconf import Config as C
 import numpy as np
-from .custom_dataset import general_dataset
 from datasets import load_dataset
-from .augmentation import get_augment, apply_augment, random_augment
-from .common import get_logger
 import pandas as pd
-from .utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
 from transformers import BertTokenizer, BertTokenizerFast
-from .text_networks import num_class
 import math
 import copy
-from .archive import policy_map, default_policy
 import multiprocessing
 from functools import partial
 import time
-from .utils.get_data import download_data
-from .utils.metrics import n_dist
 
+try:
+    from .utils.get_data import download_data
+    from .utils.metrics import n_dist
+    from .archive import policy_map, default_policy
+    from .text_networks import num_class
+    from .utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
+    from .common import get_logger
+    from .augmentation import get_augment, apply_augment, random_augment
+    from .custom_dataset import general_dataset
+    from .transforms import Compose
+except:
+    from utils.get_data import download_data
+    from utils.metrics import n_dist
+    from archive import policy_map, default_policy
+    from text_networks import num_class
+    from utils.raw_data_utils import get_processor, general_subsample_by_classes, get_examples, general_split
+    from common import get_logger
+    from augmentation import get_augment, apply_augment, random_augment
+    from custom_dataset import general_dataset
+    from transforms import Compose
 
 logger = get_logger('Text AutoAugment')
 logger.setLevel(logging.INFO)
@@ -45,7 +56,7 @@ def get_datasets(dataset, policy_opt):
     elif aug in list(policy_map.keys()):  # use pre-searched policy
         transform_train.transforms.insert(0, Augmentation(policy_map[aug]))
     else:
-        transform_train.transforms.insert(0, Augmentation(default_policy()))
+        pass
 
     # load dataset
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -95,6 +106,11 @@ class Augmentation(object):
     def __call__(self, texts, labels):
         texts = np.array(texts)
         labels = np.array(labels)
+        if C.get()['ir'] < 1 and C.get()['method'] != 'bt':
+            # rebalanced data
+            ir_index = np.where(labels == 0)
+            texts = np.append(texts, texts[ir_index].repeat(int(1 / C.get()['ir']) - 1))
+            labels = np.append(labels, labels[ir_index].repeat(int(1 / C.get()['ir']) - 1))
         # generate multiple augmented data if necessary
         labels = labels.repeat(C.get()['n_aug'])
         texts = texts.repeat(C.get()['n_aug'])

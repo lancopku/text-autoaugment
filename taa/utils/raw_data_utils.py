@@ -5,13 +5,20 @@ from sklearn.model_selection import StratifiedShuffleSplit, KFold
 import torchtext
 import csv
 import os
+import sys
 import numpy as np
 import random
 import pandas as pd
 import re
 from theconf import Config as C
-from ..common import get_logger
 import logging
+
+
+try:
+    from ..common import get_logger
+except:
+    sys.path.append("..")
+    from common import get_logger
 
 logger = get_logger('Text AutoAugment')
 logger.setLevel(logging.INFO)

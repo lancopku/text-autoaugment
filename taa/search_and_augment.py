@@ -1,10 +1,17 @@
 import pkg_resources
-from .data import augment
-from .search import search_policy
 from datasets import load_dataset
 from theconf import Config as C
-from .archive import policy_map
-from .utils.train_tfidf import train_tfidf
+
+try:
+    from .archive import policy_map
+    from .utils.train_tfidf import train_tfidf
+    from .data import augment
+    from .search import search_policy
+except:
+    from archive import policy_map
+    from utils.train_tfidf import train_tfidf
+    from data import augment
+    from search import search_policy   
 
 
 def search_and_augment(configfile=None):

@@ -18,17 +18,27 @@ from ray import tune
 from ray import tune
 from tqdm import tqdm
 from datetime import datetime
-from .archive import policy_decoder, remove_deplicates
-from .augmentation import augment_list
-from .common import get_logger, add_filehandler
-from .utils.train_tfidf import train_tfidf
-from .train import train_and_eval
 from theconf import Config as C, ConfigArgumentParser
 import joblib
 import random
 import logging
 from pystopwatch2 import PyStopwatch
 import json
+
+try:
+    from .archive import policy_decoder, remove_deplicates
+    from .augmentation import augment_list
+    from .common import get_logger, add_filehandler
+    from .utils.train_tfidf import train_tfidf
+    from .train import train_and_eval
+except:
+    from archive import policy_decoder, remove_deplicates
+    from augmentation import augment_list
+    from common import get_logger, add_filehandler
+    from utils.train_tfidf import train_tfidf
+    from train import train_and_eval
+
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -127,7 +137,7 @@ def search_policy(dataset, abspath, configfile=None, num_search=200, num_policy=
     logger.info('Initialize ray...')
     # ray.init(num_cpus=num_cpus, local_mode=True)  # used for debug
     ray.init(num_gpus=num_gpus, num_cpus=num_cpus)
-
+    
     train_tfidf(dataset_type)  # calculate tf-idf score for TS and TI operations
 
     if method == 'taa':

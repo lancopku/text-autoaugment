@@ -3,7 +3,10 @@ import sklearn
 import torch
 import numpy as np
 from collections import defaultdict
-from .distinct_n import distinct_n_corpus_level
+try:
+    from .distinct_n import distinct_n_corpus_level
+except:
+    from distinct_n import distinct_n_corpus_level
 
 from torch import nn
 
