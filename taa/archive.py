@@ -2,7 +2,10 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from .augmentation import augment_list
+try:
+    from .augmentation import augment_list
+except:
+    from augmentation import augment_list
 
 
 def remove_deplicates(policies):
@@ -172,6 +175,56 @@ def trec():
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
 
 
+def sst2():
+    return [[('synonym_word_substitute', 0.5364303169444116, 0.19413963688692676),
+             ('synonym_word_substitute', 0.5031232065494572, 0.1525844904189979)],
+            [('tfidf_word_substitute', 0.6418241968074692, 0.3370626777277068),
+             ('tfidf_word_substitute', 0.9196749316584165, 0.38708167926026316)],
+            [('random_word_delete', 0.46983690625301894, 0.8914079607975975), 
+             ('random_word_delete', 0.1736560332764212, 0.04829071948477086)], 
+            [('random_word_delete', 0.06996736110631846, 0.26554522796740154), 
+             ('random_word_swap', 0.3465013433062492, 0.012844513493466714)], 
+            [('random_word_swap', 0.08932276061312096, 0.8109482577155689), 
+             ('random_word_swap', 0.18372409409505108, 0.05053298441875576)], 
+            [('synonym_word_substitute', 0.3379990774213545, 0.5933999181049157),
+             ('tfidf_word_substitute', 0.9983343578421985, 0.5781089454270496)],
+            [('tfidf_word_insert', 0.5113998603783605, 0.41212940260619846),
+             ('random_word_delete', 0.5293255489346063, 0.14480959698732754)],
+            [('tfidf_word_insert', 0.6745183870263084, 0.95335175846966),
+             ('random_word_swap', 0.4128642761364277, 0.00691588489202144)],
+            [('synonym_word_substitute', 0.6352531215702312, 0.18311186039533067),
+             ('random_word_delete', 0.5926874262625883, 0.5364992599119727)],
+            [('tfidf_word_substitute', 0.0007766212863096478, 0.9951597620125248),
+             ('tfidf_word_insert', 0.9284908255001041, 0.8151066122389705)], 
+            [('random_word_delete', 0.5543678813405379, 0.5189422763173466),
+             ('tfidf_word_substitute', 0.4301374956162636, 0.8941465004308808)],
+            [('random_word_delete', 0.5649901290207588, 0.4147469438768546),
+             ('synonym_word_substitute', 0.7379541454486046, 0.39346847798276585)]]
+
+
+def cola():
+    return [[('random_word_delete', 0.3561054823049778, 0.38653604140692843),
+             ('tfidf_word_substitute', 0.6119904498638091, 0.7480956486081061)],
+            [('tfidf_word_substitute', 0.7333089032420526, 0.8074409858237845),
+             ('random_word_swap', 0.5336904643341456, 0.3061304517754367)],
+            [('synonym_word_substitute', 0.8703484961446668, 0.8713429056373105), 
+             ('synonym_word_substitute', 0.3888761904351198, 0.44534142264101106)],
+            [('random_word_swap', 0.38489549841780535, 0.5162453703445143), 
+             ('random_word_delete', 0.6245419459874113, 0.20536909806810433)],
+            [('tfidf_word_substitute', 0.22666456210358554, 0.39372880970524793),
+             ('random_word_swap', 0.811864987249894, 0.9555265437891366)],
+            [('tfidf_word_insert', 0.30050492672021645, 0.9916786328306386), 
+             ('tfidf_word_substitute', 0.06255950877127048, 0.6309235049048048)],
+            [('random_word_delete', 0.6719132372044447, 0.9836329858619379), 
+             ('tfidf_word_insert', 0.8420599342164212, 0.404672629267566)], 
+            [('synonym_word_substitute', 0.5918495436499459, 0.8293310716446014), 
+             ('tfidf_word_insert', 0.9111906303284524, 0.5205727423907498)],
+            [('synonym_word_substitute', 0.8506006593326765, 0.6472527298713463),
+             ('synonym_word_substitute', 0.43707935799244513, 0.5494767725442937)],
+            [('tfidf_word_insert', 0.6572641245063084, 0.32120987775289295),
+             ('random_word_swap', 0.4009335761117499, 0.3015697007069029)]]
+
+
 def default_policy():
     return [[('synonym_word_substitute', 0.7492730962660217, 0.8816452863413866),
              ('synonym_word_substitute', 0.33184334794125936, 0.5208169910984721)],
@@ -197,4 +250,5 @@ def default_policy():
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
 
 
-policy_map = {'imdb': imdb(), 'sst5': sst5(), 'trec': trec(), 'yelp2': yelp2(), 'yelp5': yelp5()}
+policy_map = {'imdb': imdb(), 'sst5': sst5(), 'trec': trec(),
+              'yelp2': yelp2(), 'yelp5': yelp5(), 'sst2':sst2(), 'cola':cola()}

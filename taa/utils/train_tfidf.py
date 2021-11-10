@@ -1,10 +1,13 @@
 import re
 import argparse
 import nlpaug.model.word_stats as nmw
-from .raw_data_utils import get_examples
 import os
 from theconf import Config as C
 from datasets import load_dataset 
+try:
+    from .raw_data_utils import get_examples
+except:
+    from raw_data_utils import get_examples
 
 
 def _tokenizer(text, token_pattern=r"(?u)\b\w\w+\b"):
