@@ -8,8 +8,8 @@ for seed in 59 100 159
 do
   for t in 1 2 3 4 5
   do
-    python search.py \
-    -c confs/bert_imdb_example.yaml \
+    python examples/reproduce_experiment.py \
+    -c taa/confs/bert_imdb_example.yaml \
     --abspath '/home/renshuhuai/text-autoaugment' \
     --n-aug 16 \
     --train-npc 40 \

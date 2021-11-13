@@ -639,4 +639,4 @@ def general_subsample_by_classes(all_examples, labels, label_mapping, tag):
 
 if __name__ == '__main__':
     pc = get_processor('yelp5')
-    pc.get_train_examples('/home/andyren/fast-autoaugment/FastAutoAugment/data/yelp_review_full_csv')
+    pc.get_train_examples('/home/renshuhuai/text-autoaugment/data/yelp_review_full_csv')

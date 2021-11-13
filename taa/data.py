@@ -18,7 +18,7 @@ from transformers import BertTokenizer, BertTokenizerFast
 from .text_networks import num_class
 import math
 import copy
-from .archive import policy_map, default_policy
+from .archive import policy_map
 import multiprocessing
 from functools import partial
 import time
@@ -45,7 +45,7 @@ def get_datasets(dataset, policy_opt):
     elif aug in list(policy_map.keys()):  # use pre-searched policy
         transform_train.transforms.insert(0, Augmentation(policy_map[aug]))
     else:
-        transform_train.transforms.insert(0, Augmentation(default_policy()))
+        pass
 
     # load dataset
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -95,6 +95,11 @@ class Augmentation(object):
     def __call__(self, texts, labels):
         texts = np.array(texts)
         labels = np.array(labels)
+        if C.get()['ir'] < 1:
+            # rebalanced data
+            ir_index = np.where(labels == 0)
+            texts = np.append(texts, texts[ir_index].repeat(int(1 / C.get()['ir']) - 1))
+            labels = np.append(labels, labels[ir_index].repeat(int(1 / C.get()['ir']) - 1))
         # generate multiple augmented data if necessary
         labels = labels.repeat(C.get()['n_aug'])
         texts = texts.repeat(C.get()['n_aug'])

@@ -1,1 +1,2 @@
 include taa/confs/bert_sst2_example.yaml
+include taa/confs/bert_imdb_example.yaml

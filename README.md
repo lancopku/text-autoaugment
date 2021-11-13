@@ -3,8 +3,8 @@ This repository contains the code for our paper [Text AutoAugment: Learning Comp
 
 ![Overview of IAIS](figures/taa.png)
 
-**************************** Updates ****************************
-- 21.10.27: We make taa installable as a package and adapt to [huggingface/transformers](https://github.com/huggingface/transformers). 
+## Updates
+- [21.10.27]: We make taa installable as a package and adapt to [huggingface/transformers](https://github.com/huggingface/transformers). 
 Now you can search augmentation policy for your custom dataset with **TWO** lines of code.
 
 ## Quick Links
@@ -31,13 +31,27 @@ Now you can search augmentation policy for your custom dataset with **TWO** line
 
 ### Prepare environment
 
-Install pytorch, torchvision and other small additional dependencies. Then, install this repo as a python package. Note that `cudatoolkit=10.0` should match the CUDA version on your machine.
+Install pytorch and other small additional dependencies. Then, install this repo as a python package. Note that `cudatoolkit=10.0` should match the CUDA version on your machine.
 
 ```bash
-conda install pytorch torchvision cudatoolkit=10.0 -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
+# Clone this repo
+git clone https://github.com/lancopku/text-autoaugment.git
+cd text-autoaugment
+
+# Create a conda environment
+conda -n taa python=3.6
+conda activate taa
+
+# Install dependencies
+conda install pytorch cudatoolkit=10.0 -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
 pip install git+https://github.com/wbaek/theconf
 pip install git+https://github.com/ildoonet/pystopwatch2.git
-pip install git+https://github.com/lancopku/text-autoaugment.git
+pip install -r requirements.txt
+
+# Install this library (**no need to re-build if the source code is modified**)
+python setup.py develop
+
+# Download the models in NLTK
 python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger')"
 ```
 
@@ -68,7 +82,7 @@ The `configfile` contains some preset arguments, including:
   All the augments above are used for the `load_dataset()` function in [huggingface/datasets](https://huggingface.co/datasets). Please refer to [link](https://huggingface.co/docs/datasets/v1.12.1/package_reference/loading_methods.html#datasets.load_dataset) for details. 
   - `text_key`: *Used to get text from a data instance (`dict` form in huggingface/datasets. See this [IMDB example](https://huggingface.co/datasets/imdb#data-instances).)*
 - `abspath`: *Your working directory*
-- `aug`: *Pre-searched policy*. Now we support imdb, sst5, trec, yelp2 and yelp5. See [archive.py](taa/archive.py).
+- `aug`: *Pre-searched policy*. Now we support **IMDB**, **SST5**, **TREC**, **YELP2** and **YELP5**. See [archive.py](taa/archive.py).
 - `per_device_train_batch_size`: *Batch size per device for training*
 - `per_device_eval_batch_size`: *Batch size per device for evaluation*
 - `epoch`: *Training epoch*
@@ -106,7 +120,7 @@ from taa.search_and_augment import augment_with_presearched_policy
 augmented_train_dataset = augment_with_presearched_policy(configfile="/path/to/your/config.yaml")
 ```
 
-Now we support imdb, sst5, trec, yelp2 and yelp5. See [archive.py](taa/archive.py) for details. 
+Now we support **IMDB**, **SST5**, **TREC**, **YELP2** and **YELP5**. See [archive.py](taa/archive.py) for details. 
 
 This table lists the test accuracy (%) of pre-searched TAA policy on **full** datasets:
 
@@ -116,7 +130,7 @@ This table lists the test accuracy (%) of pre-searched TAA policy on **full** da
 | TAA     | 89.37 | 52.55 | 97.07 |  96.04 |  65.73 |
 | n_aug   |   4   |   4   |   4   |    2   |    2   |
 
-More pre-searched policies and their performance will be coming soon. 
+More pre-searched policies and their performance will be **COMING SOON**. 
 
 #### Fine-tune a new model on the augmented training dataset
 
@@ -124,7 +138,7 @@ After getting `augmented_train_dataset`, you can load it to the huggingface trai
 
 ### Reproduce results in the paper
 
-Please run [huggingface_lowresource.sh](taa/script/huggingface_lowresource.sh) or [huggingface_imbalanced.sh](taa/script/huggingface_imbalanced.sh).
+Please see [examples/reproduce_experiment.py](examples/reproduce_experiment.py), and run [script/huggingface_lowresource.sh](script/huggingface_lowresource.sh) or [script/huggingface_imbalanced.sh](script/huggingface_imbalanced.sh).
 
 ## Contact
 
