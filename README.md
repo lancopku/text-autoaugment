@@ -4,8 +4,9 @@ This repository contains the code for our paper [Text AutoAugment: Learning Comp
 ![Overview of IAIS](figures/taa.png)
 
 ## Updates
+- [22.02.23]: We add an example on how to use TAA for your **custom (local) dataset**.
 - [21.10.27]: We make taa installable as a package and adapt to [huggingface/transformers](https://github.com/huggingface/transformers). 
-Now you can search augmentation policy for your custom dataset with **TWO** lines of code.
+Now you can search augmentation policy for the **huggingface dataset** with **TWO** lines of code.
 
 ## Quick Links
 * [Overview](#overview)
@@ -69,7 +70,10 @@ from taa.search_and_augment import search_and_augment
 augmented_train_dataset = search_and_augment(configfile="/path/to/your/config.yaml")
 ```
 
-The `configfile` contains some preset arguments, including:
+The `configfile` (YAML file) contains all the arguments including path, model, dataset, optimization hyper-parameter, etc.
+To successfully run the code, please carefully preset these arguments:
+<details>
+<summary>show details</summary>
 
 - `model`:
   - `type`: *backbone model*
@@ -79,7 +83,7 @@ The `configfile` contains some preset arguments, including:
   - `data_dir`: *Defining the data_dir of the dataset configuration*
   - `data_files`: *Path(s) to source data file(s)*
   
-  All the augments above are used for the `load_dataset()` function in [huggingface/datasets](https://huggingface.co/datasets). Please refer to [link](https://huggingface.co/docs/datasets/v1.12.1/package_reference/loading_methods.html#datasets.load_dataset) for details. 
+  **ATTENTION**: All the augments above are used for the `load_dataset()` function in [huggingface/datasets](https://huggingface.co/datasets). Please refer to [link](https://huggingface.co/docs/datasets/v1.12.1/package_reference/loading_methods.html#datasets.load_dataset) for details. 
   - `text_key`: *Used to get text from a data instance (`dict` form in huggingface/datasets. See this [IMDB example](https://huggingface.co/datasets/imdb#data-instances).)*
 - `abspath`: *Your working directory*
 - `aug`: *Pre-searched policy*. Now we support **IMDB**, **SST5**, **TREC**, **YELP2** and **YELP5**. See [archive.py](taa/archive.py).
@@ -105,8 +109,19 @@ The `configfile` contains some preset arguments, including:
 - `num_search`: *Number of optimization iteration*
 - `num_gpus`: *Number of GPUs used in RAY*
 - `num_cpus`: *Number of CPUs used in RAY*
+</details>
 
-**ATTENTION**: [bert_sst2_example.yaml](taa/confs/bert_sst2_example.yaml) is a config example for BERT model and [SST2](https://huggingface.co/datasets/glue#sst2) dataset. You can follow this example to create your own config file. For instance, if you only want to change the dataset from `sst2` to `imdb`, just delete the `sst2` in the `'path'` argument, modify the `'name'` to `imdb` and modity the `'text_key'` to `text`.
+##### [1] TAA for huggingface dataset
+
+[bert_sst2_example.yaml](taa/confs/bert_sst2_example.yaml) is a configfile example for BERT model and [SST2](https://huggingface.co/datasets/glue#sst2) dataset. 
+You can follow this example to create your own configfile for other **huggingface dataset**. 
+
+For instance, if you only want to change the dataset from `sst2` to `imdb`, just delete the `sst2` in the `'path'` argument, modify the `'name'` to `imdb` and modity the `'text_key'` to `text`. The result should be like [bert_imdb_example.yaml](taa/confs/bert_imdb_example.yaml).
+
+##### [2] TAA for custom (local) dataset
+
+[bert_custom_data_example.yaml](taa/confs/bert_custom_data_example.yaml) is a configfile example for BERT model and **custom (local) dataset**.
+The custom dataset should be in the csv format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data.csv) is an example of the custom dataset.
 
 **WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 
