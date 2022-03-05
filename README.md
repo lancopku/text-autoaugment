@@ -53,7 +53,7 @@ pip install -r requirements.txt
 python setup.py develop
 
 # Download the models in NLTK
-python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger')"
+python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('omw-1.4')"
 ```
 
 ### Use TAA with Huggingface
@@ -121,7 +121,7 @@ For instance, if you only want to change the dataset from `sst2` to `imdb`, just
 ##### [2] TAA for custom (local) dataset
 
 [bert_custom_data_example.yaml](taa/confs/bert_custom_data_example.yaml) is a configfile example for BERT model and **custom (local) dataset**.
-The custom dataset should be in the csv format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data.csv) is an example of the custom dataset.
+The custom dataset should be in the CSV format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data.csv) is an example of the custom dataset.
 
 **WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 

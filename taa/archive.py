@@ -172,4 +172,4 @@ def trec():
              ('tfidf_word_insert', 0.9572797299031379, 0.5632362843917429)]]
 
 
-policy_map = {'imdb': imdb(), 'sst5': sst5(), 'trec': trec(), 'yelp2': yelp2(), 'yelp5': yelp5()}
+policy_map = {'imdb': imdb(), 'sst5': sst5(), 'trec': trec(), 'yelp2': yelp2(), 'yelp5': yelp5(), 'custom_data': imdb()}
