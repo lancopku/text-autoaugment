@@ -40,7 +40,7 @@ git clone https://github.com/lancopku/text-autoaugment.git
 cd text-autoaugment
 
 # Create a conda environment
-conda -n taa python=3.6
+conda create -n taa python=3.6
 conda activate taa
 
 # Install dependencies
