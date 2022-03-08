@@ -167,10 +167,10 @@ Code refers to: [fast-autoaugment](https://github.com/kakaobrain/fast-autoaugmen
 If you find this code useful for your research, please consider citing:
 ```
 @inproceedings{ren2021taa,
-  title={Text AutoAugment: Learning Compositional Augmentation Policy for Text Classification},
-  author={Shuhuai Ren, Jinchao Zhang, Lei Li, Xu Sun, Jie Zhou},
-  booktitle={EMNLP},
-  year={2021}
+    title = "Text {A}uto{A}ugment: Learning Compositional Augmentation Policy for Text Classification",
+    author = "Ren, Shuhuai and Zhang, Jinchao and Li, Lei and Sun, Xu and Zhou, Jie",
+    booktitle = "Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing",
+    year = "2021",
 }
 ```
 
