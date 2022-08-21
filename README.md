@@ -3,34 +3,32 @@ This repository contains the code for our paper [Text AutoAugment: Learning Comp
 
 ![Overview of IAIS](figures/taa.png)
 
-## Updates
+# Updates
 - [22.02.23]: We add an example on how to use TAA for your **custom (local) dataset**.
 - [21.10.27]: We make taa installable as a package and adapt to [huggingface/transformers](https://github.com/huggingface/transformers). 
 Now you can search augmentation policy for the **huggingface dataset** with **TWO** lines of code.
 
-## Quick Links
-* [Overview](#overview)
-* [Getting Started](#getting-started)
-* [Prepare environment](#prepare-environment)
-* [Use TAA with Huggingface](#use-taa-with-huggingface)
-  - [Get augmented training dataset with TAA policy](#get-augmented-training-dataset-with-taa-policy)
-    * [Search for the optimal policy](#search-for-the-optimal-policy)
-    * [Use our pre-searched policy](#use-our-pre-searched-policy)
-  - [Fine-tune a new model on the augmented training dataset](#fine-tune-a-new-model-on-the-augmented-training-dataset)
-* [Reproduce results in the paper](#reproduce-results-in-the-paper)
-* [Contact](#contact)
-* [Acknowledgments](#acknowledgments)
-* [Citation](#citation)
-* [License](#license)
+# Quick Links
+- [Overview](#overview)
+- [Getting Started](#getting-started)
+  * [Prepare environment](#prepare-environment)
+  * [Use TAA with Huggingface](#use-taa-with-huggingface)
+    + [1. Get augmented training dataset with TAA policy](#1-get-augmented-training-dataset-with-taa-policy)
+    + [2. Fine-tune a new model on the augmented training dataset](#2-fine-tune-a-new-model-on-the-augmented-training-dataset)
+  * [Reproduce results in the paper](#reproduce-results-in-the-paper)
+- [Contact](#contact)
+- [Acknowledgments](#acknowledgments)
+- [Citation](#citation)
+- [License](#license)
 
-## Overview
+# Overview
 1. We  present  a  learnable  and  compositional framework for data augmentation.  Our proposed algorithm automatically searches for the optimal compositional policy, which improves the diversity and quality of augmented samples.
 
 2. In low-resource and class-imbalanced regimes of six benchmark datasets, TAA significantly improves the generalization ability of deep neural networks like  BERT and effectively boosts text classification performance.
 
-## Getting Started
+# Getting Started
 
-### Prepare environment
+## Prepare environment
 
 Install pytorch and other small additional dependencies. Then, install this repo as a python package. Note that `cudatoolkit=10.0` should match the CUDA version on your machine.
 
@@ -56,11 +54,12 @@ python setup.py develop
 python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('omw-1.4')"
 ```
 
-### Use TAA with Huggingface
+## Use TAA with Huggingface
 
-#### Get augmented training dataset with TAA policy
+### 1. Get augmented training dataset with TAA policy
 
-##### Search for the optimal policy
+<details>
+<summary><b>Option 1: Search for the optimal policy</b></summary>
 
 You can search for the optimal policy on classification datasets supported by [huggingface/datasets](https://huggingface.co/datasets):
 ```bash
@@ -82,7 +81,7 @@ To successfully run the code, please carefully preset these arguments:
   - `name`: *Defining the name of the dataset configuration*
   - `data_dir`: *Defining the data_dir of the dataset configuration*
   - `data_files`: *Path(s) to source data file(s)*
-  
+
   **ATTENTION**: All the augments above are used for the `load_dataset()` function in [huggingface/datasets](https://huggingface.co/datasets). Please refer to [link](https://huggingface.co/docs/datasets/v1.12.1/package_reference/loading_methods.html#datasets.load_dataset) for details. 
   - `text_key`: *Used to get text from a data instance (`dict` form in huggingface/datasets. See this [IMDB example](https://huggingface.co/datasets/imdb#data-instances).)*
 - `abspath`: *Your working directory*
@@ -111,21 +110,24 @@ To successfully run the code, please carefully preset these arguments:
 - `num_cpus`: *Number of CPUs used in RAY*
 </details>
 
-##### [1] TAA for huggingface dataset
-
-[bert_sst2_example.yaml](taa/confs/bert_sst2_example.yaml) is a configfile example for BERT model and [SST2](https://huggingface.co/datasets/glue#sst2) dataset. 
+#### `configfile` example 1: TAA for huggingface dataset
+>[bert_sst2_example.yaml](taa/confs/bert_sst2_example.yaml) is a configfile example for BERT model and [SST2](https://huggingface.co/datasets/glue#sst2) dataset. 
 You can follow this example to create your own configfile for other **huggingface dataset**. 
+>
+>For instance, if you only want to change the dataset from `sst2` to `imdb`, just delete the `sst2` in the `'path'` argument, modify the `'name'` to `imdb` and modity the `'text_key'` to `text`. The result should be like [bert_imdb_example.yaml](taa/confs/bert_imdb_example.yaml).
 
-For instance, if you only want to change the dataset from `sst2` to `imdb`, just delete the `sst2` in the `'path'` argument, modify the `'name'` to `imdb` and modity the `'text_key'` to `text`. The result should be like [bert_imdb_example.yaml](taa/confs/bert_imdb_example.yaml).
+#### `configfile` example 2: TAA for custom (local) dataset
 
-##### [2] TAA for custom (local) dataset
-
-[bert_custom_data_example.yaml](taa/confs/bert_custom_data_example.yaml) is a configfile example for BERT model and **custom (local) dataset**.
+>[bert_custom_data_example.yaml](taa/confs/bert_custom_data_example.yaml) is a configfile example for BERT model and **custom (local) dataset**.
 The custom dataset should be in the CSV format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data.csv) is an example of the custom dataset.
+>
+>**WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 
-**WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 
-##### Use our pre-searched policy
+</details>
+
+<details>
+<summary><b>Option 2: Use our pre-searched policy</b></summary>
 
 To train a model on the datasets augmented by our pre-searched policy, please use (Take [IMDB](https://huggingface.co/datasets/imdb) as an example):
 ```bash
@@ -146,23 +148,24 @@ This table lists the test accuracy (%) of pre-searched TAA policy on **full** da
 | n_aug   |   4   |   4   |   4   |    2   |    2   |
 
 More pre-searched policies and their performance will be **COMING SOON**. 
+</details>
 
-#### Fine-tune a new model on the augmented training dataset
+### 2. Fine-tune a new model on the augmented training dataset
 
 After getting `augmented_train_dataset`, you can load it to the huggingface trainer directly. Please refer to [search_augment_train.py](taa/search_augment_train.py) for details. 
 
-### Reproduce results in the paper
+## Reproduce results in the paper
 
 Please see [examples/reproduce_experiment.py](examples/reproduce_experiment.py), and run [script/huggingface_lowresource.sh](script/huggingface_lowresource.sh) or [script/huggingface_imbalanced.sh](script/huggingface_imbalanced.sh).
 
-## Contact
+# Contact
 
 If you have any questions related to the code or the paper, feel free to open an issue or email Shuhuai (renshuhuai007 [AT] gmail [DOT] com).
 
-## Acknowledgments
+# Acknowledgments
 Code refers to: [fast-autoaugment](https://github.com/kakaobrain/fast-autoaugment).
 
-## Citation
+# Citation
 
 If you find this code useful for your research, please consider citing:
 ```
@@ -174,6 +177,6 @@ If you find this code useful for your research, please consider citing:
 }
 ```
 
-## License
+# License
 
 MIT
