@@ -4,7 +4,7 @@ dataset:
   path: /home/renshuhuai/text-autoaugment/taa/data
   name: custom_data
   data_dir:
-  data_files: {'train': 'custom_data.csv', 'test': 'custom_data.csv'}
+  data_files: {'train': 'custom_data_train.csv', 'test': 'custom_data_test.csv'}
   text_key: text
 abspath: /home/renshuhuai/text-autoaugment
 aug: imdb
