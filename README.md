@@ -30,7 +30,7 @@ Now you can search augmentation policy for the **huggingface dataset** with **TW
 
 ## Prepare environment
 
-Install pytorch and other small additional dependencies. Then, install this repo as a python package. Note that `cudatoolkit=10.0` should match the CUDA version on your machine.
+Install pytorch and other small additional dependencies. Then, install this repo as a python package. Note that `cudatoolkit=10.2` should match the CUDA version on your machine.
 
 ```bash
 # Clone this repo
@@ -42,7 +42,7 @@ conda create -n taa python=3.6
 conda activate taa
 
 # Install dependencies
-conda install pytorch cudatoolkit=10.0 -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
+pip install torch==1.10.1+cu102 torchvision==0.11.2+cu102 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu102/torch_stable.html
 pip install git+https://github.com/wbaek/theconf
 pip install git+https://github.com/ildoonet/pystopwatch2.git
 pip install -r requirements.txt
@@ -53,6 +53,7 @@ python setup.py develop
 # Download the models in NLTK
 python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('omw-1.4')"
 ```
+Please make sure your Torch supports GPU, check it with the command `python -c "import torch; print(torch.cuda.is_available())` (should output `True`).
 
 ## Use TAA with Huggingface
 
@@ -119,7 +120,7 @@ You can follow this example to create your own configfile for other **huggingfac
 #### `configfile` example 2: TAA for custom (local) dataset
 
 >[bert_custom_data_example.yaml](taa/confs/bert_custom_data_example.yaml) is a configfile example for BERT model and **custom (local) dataset**.
-The custom dataset should be in the CSV format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data.csv) is an example of the custom dataset.
+The custom dataset should be in the CSV format, and the column name of the data table should be `text` and `label`. [custom_data.csv](taa/data/custom_data_train.csv) is an example of the custom dataset.
 >
 >**WARNING**: The policy optimization framework is based on [ray](https://github.com/ray-project/ray). By default we use 4 GPUs and 40 CPUs for policy optimization. Make sure your computing resources meet this condition, or you will need to create a new configuration file. And please specify the gpus, e.g., `CUDA_VISIBLE_DEVICES=0,1,2,3` before using the above code. TPU does not seem to be supported now.   
 
