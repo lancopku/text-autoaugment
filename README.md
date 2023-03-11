@@ -42,7 +42,7 @@ conda create -n taa python=3.6
 conda activate taa
 
 # Install dependencies
-pip install torch==1.10.1+cu102 torchvision==0.11.2+cu102 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu102/torch_stable.html
+pip install torch==1.10.1+cu102 -f https://download.pytorch.org/whl/cu102/torch_stable.html
 pip install git+https://github.com/wbaek/theconf
 pip install git+https://github.com/ildoonet/pystopwatch2.git
 pip install -r requirements.txt
@@ -53,7 +53,7 @@ python setup.py develop
 # Download the models in NLTK
 python -c "import nltk; nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('omw-1.4')"
 ```
-Please make sure your Torch supports GPU, check it with the command `python -c "import torch; print(torch.cuda.is_available())` (should output `True`).
+Please make sure your Torch supports GPU, check it with the command `python -c "import torch; print(torch.cuda.is_available())"` (should output `True`).
 
 ## Use TAA with Huggingface
 
@@ -161,7 +161,7 @@ Please see [examples/reproduce_experiment.py](examples/reproduce_experiment.py),
 
 # Contact
 
-If you have any questions related to the code or the paper, feel free to open an issue or email Shuhuai (renshuhuai007 [AT] gmail [DOT] com).
+If you have any questions related to the code or the paper, feel free to open an issue.
 
 # Acknowledgments
 Code refers to: [fast-autoaugment](https://github.com/kakaobrain/fast-autoaugment).
