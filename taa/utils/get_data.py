@@ -60,7 +60,26 @@ def download_imdb():
         filename = os.path.join(dataroot, "aclImdb_v1.tar.gz")
         urllib.request.urlretrieve("http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz", filename, progress)
         with tarfile.open(filename, "r") as tar_ref:
-            tar_ref.extractall(dataroot)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar_ref, dataroot)
         os.remove(filename)
         urllib.request.urlretrieve(
             "https://raw.githubusercontent.com/google-research/uda/master/text/data/IMDB_raw/train_id_list.txt",
@@ -146,7 +165,26 @@ def download_yelp2():
         filename = os.path.join(dataroot, "yelp_review_polarity_csv.tar.gz")
         urllib.request.urlretrieve("https://s3.amazonaws.com/fast-ai-nlp/yelp_review_polarity_csv.tgz", filename, progress)
         with tarfile.open(filename, "r") as tar_ref:
-            tar_ref.extractall(dataroot)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar_ref, dataroot)
         os.remove(filename)
 
 
@@ -157,7 +195,26 @@ def download_yelp5():
         filename = os.path.join(dataroot, "yelp_review_full_csv.tar.gz")
         urllib.request.urlretrieve("https://s3.amazonaws.com/fast-ai-nlp/yelp_review_full_csv.tgz", filename, progress)
         with tarfile.open(filename, "r") as tar_ref:
-            tar_ref.extractall(dataroot)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar_ref, dataroot)
         os.remove(filename)
 
 
